@@ -1,5 +1,5 @@
 ﻿#include "OSMPClient.h"
-#include "OSMPInterface.h"
+#include "GRPCInterface.h"
 #include <filesystem>
 
 int main(int argc, char *argv[])
@@ -8,16 +8,13 @@ int main(int argc, char *argv[])
 
 	std::cout << std::filesystem::current_path() << std::endl << std::endl;
 
-	OSMPInterface FMUInterface;
-	//FMUInterface.create("path");
-	//FMUInterface.init();//float starttime = 0
-	simulationLoop();
+	std::string server_address = "0.0.0.0:51425";
+	if (1 < argc) {
+		server_address = argv[1];
+	}
+
+	GRPCInterface grpc(server_address);
+	grpc.startServer();
 
 	return 0;
-}
-
-void simulationLoop() {
-	//wait for gRPC calls
-	//do stuff
-	//return to gRPC
 }
