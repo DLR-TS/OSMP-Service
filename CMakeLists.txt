@@ -143,32 +143,32 @@ target_link_libraries(OSMPClientLib PUBLIC OSMPGRPCLib)
 target_include_directories(OSMPClientLib BEFORE PUBLIC ${CMAKE_BINARY_DIR}/gens )# $<TARGET_PROPERTY:OSMPGRPCLib,INTERFACE_INCLUDE_DIRECTORIES>)
 
 find_package(Catch2 REQUIRED)
-add_executable(test_CoSiMa ${TESTFILES})
-target_include_directories(test_CoSiMa PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${CMAKE_BINARY_DIR}/gens)
-target_link_libraries(test_CoSiMa PRIVATE OSMPClientLib Catch2::Catch2 OSMPGRPCLib)
+#add_executable(test_CoSiMa ${TESTFILES})
+#target_include_directories(test_CoSiMa PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${CMAKE_BINARY_DIR}/gens)
+#target_link_libraries(test_CoSiMa PRIVATE OSMPClientLib Catch2::Catch2 OSMPGRPCLib)
 
 #copy test resources to build folder
-add_custom_command(TARGET test_CoSiMa PRE_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E
-                         make_directory $<TARGET_FILE_DIR:test_CoSiMa>/../test/resources/)
+#add_custom_command(TARGET test_CoSiMa PRE_BUILD
+#                     COMMAND ${CMAKE_COMMAND} -E
+#                         make_directory $<TARGET_FILE_DIR:test_CoSiMa>/../test/resources/)
 #Feedthrough_cs_me.fmu contains definitions for both me and cs => created copies with edited modelDescription.xml
-add_custom_command(TARGET test_CoSiMa PRE_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E
-                         copy_if_different
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig1.yaml
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig2.yaml
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig3.yaml
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Feedthrough_cs.fmu
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Feedthrough_me.fmu
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Stair.fmu
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPCNetworkProxy.fmu
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySensor.fmu
-						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySource.fmu
-						 $<TARGET_FILE_DIR:test_CoSiMa>/../test/resources/)
+#add_custom_command(TARGET test_CoSiMa PRE_BUILD
+#                     COMMAND ${CMAKE_COMMAND} -E
+#                         copy_if_different
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig1.yaml
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig2.yaml
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig3.yaml
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Feedthrough_cs.fmu
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Feedthrough_me.fmu
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Stair.fmu
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPCNetworkProxy.fmu
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySensor.fmu
+#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySource.fmu
+#						 $<TARGET_FILE_DIR:test_CoSiMa>/../test/resources/)
 
-include(CTest)
-include(Catch)
-catch_discover_tests(test_CoSiMa)
+#include(CTest)
+#include(Catch)
+#catch_discover_tests(test_CoSiMa)
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/include/OSMPClient.h ${CMAKE_CURRENT_BINARY_DIR}/include/OSMPClient.h)
 #configure_file(${CMAKE_CURRENT_LIST_DIR}/src/OSMPClient.cpp ${CMAKE_CURRENT_BINARY_DIR}/src/OSMPClient.cpp)

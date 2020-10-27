@@ -2,8 +2,9 @@
 
 void GRPCInterface::startServer(const bool nonBlocking)
 {
-	if (server)
+	if (server) {
 		server->Shutdown(std::chrono::system_clock::now() + transaction_timeout);
+	}
 	grpc::ServerBuilder builder;
 	builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
 	builder.RegisterService(this);
@@ -33,3 +34,21 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 		osmpInterface.create(config->fmu()));
 	return grpc::Status::OK;
 }
+
+grpc::Status GRPCInterface::GetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimString* request, CoSiMa_rpc::SimString* response) {
+	response->set_value(
+		osmpInterface.read(request->value()));
+	return grpc::Status::OK;
+};
+
+grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimNamedString* request, CoSiMa_rpc::SimInt32* response) {
+	response->set_value(
+		osmpInterface.write(request->name(), request->value()));
+	return grpc::Status::OK;
+};
+
+grpc::Status GRPCInterface::DoStep(grpc::ServerContext* context, const CoSiMa_rpc::SimEmpty* request, CoSiMa_rpc::SimDouble* response) {
+	response->set_value(
+		osmpInterface.doStep());//step size 1
+	return grpc::Status::OK;
+};

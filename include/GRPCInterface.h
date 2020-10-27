@@ -27,6 +27,9 @@ public:
 	void stopServer();
 
 	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa_rpc::SimConfig* config, CoSiMa_rpc::SimInt32* response) override;
+	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimString* request, CoSiMa_rpc::SimString* response) override;
+	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimNamedString* request, CoSiMa_rpc::SimInt32* response) override;
+	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa_rpc::SimEmpty* request, CoSiMa_rpc::SimDouble* response) override;
 
 };
 #endif GRPCINTERFACE_H

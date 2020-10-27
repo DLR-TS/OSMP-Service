@@ -1,0 +1,5 @@
+set (TESTFILES 
+#${CMAKE_CURRENT_LIST_DIR}/tests-OSMPInterface.cpp
+#${CMAKE_CURRENT_LIST_DIR}/tests-OSIBridge.cpp
+
+PARENT_SCOPE)

@@ -1,25 +1,76 @@
 #ifndef OSMPInterface_H
 #define OSMPInterface_H
 #define NOMINMAX
+
 #include <string>
+#include <map>
+#include <thread>
+
 #include "fmi4cpp/fmi4cpp.hpp"
+
+#include "OSIMessages.h"
 
 class OSMPInterface 
 {
 public:
 	int create(std::string path);
 	int init(float starttime = 0);
-	int read();
-	int write();
+	std::string read(std::string name);
+	int doStep(double stepSize = 1);
+	int write(std::string name, std::string value);
 	int close();
+
+protected:
+	class OSMPFMUSlaveStateWrapper {
+	private:
+		//cs_slave creating this fmu state is needed later for freeing the memory again
+		std::shared_ptr<fmi4cpp::fmi2::cs_slave> coSimSlave;
+
+		OSMPFMUSlaveStateWrapper(std::shared_ptr < fmi4cpp::fmi2::cs_slave> slave);
+
+	public:
+		~OSMPFMUSlaveStateWrapper();
+
+		fmi4cpp::fmi4cppFMUstate state;
+		static std::optional<OSMPFMUSlaveStateWrapper> tryGetStateOf(std::shared_ptr<fmi4cpp::fmi2::cs_slave> slave);
+	};
+
 private:
 	//fmi4cpp::fmi4cppFMUstate state;
 	std::unique_ptr<fmi4cpp::fmi2::cs_fmu> coSimFMU;
 	std::shared_ptr<fmi4cpp::fmi2::cs_slave> coSimSlave;
 
 	/**
-stores the field \"valid\" from fmi
-*/
+	Temporary storage for osmp messages (name, size, address)
+	*/
+	std::map<std::string, address> fromFMUAddresses, toFMUAddresses;
+	/**
+	Save the annotated value in the address map. Supported names are count, valid, <>.base.hi , <>.base.lo, <>.size.
+	\param std::map<std::string, address> &addressMap The map, the value is mapped in.
+	\param std::string name name of the variable. Supported names are count, valid, <>.base.hi , <>.base.lo, <>.size.
+	\param int value The value to be stored.
+	*/
+	void saveToAddressMap(std::map<std::string, address> &addressMap, std::string name, int value);
+
+	int readOutputPointerFromFMU();
+	int writeInputPointerToFMU();
+	std::string readFromHeap(address address);
+	int writeToHeap(address &address, std::string value);
+
+	eOSIMessage getMessageType(std::string messageType);
+
+	osi3::SensorView sensorView;
+	osi3::SensorViewConfiguration sensorViewConfiguration;
+	osi3::SensorData sensorData;
+	osi3::GroundTruth groundTruth;
+	osi3::TrafficCommand trafficCommand;
+	osi3::TrafficUpdate trafficUpdate;
+	setlevel4to5::MotionCommand motionCommand;
+	setlevel4to5::VehicleCommunicationData vehicleCommunicationData;
+
+	/**
+	stores the field \"valid\" from fmi
+	*/
 	bool valid = true;
 	/**
 	stores the field \"count\" from fmi

@@ -1,0 +1,57 @@
+#ifndef OSIMESSAGES_H
+#define OSIMESSAGES_H
+
+#include <variant>
+#include "osi_sensorview.pb.h"
+#include "osi_sensordata.pb.h"
+#include "osi_sensorviewconfiguration.pb.h"
+#include "osi_groundtruth.pb.h"
+#include "osi_trafficcommand.pb.h"
+#include "osi_trafficupdate.pb.h"
+#include "sl45_motioncommand.pb.h"
+#include "sl45_vehiclecommunicationdata.pb.h"
+
+/**
+* Implemented OSI Messages
+*/
+enum eOSIMessage {
+
+	SensorViewMessage,
+	SensorViewConfigurationMessage,
+	SensorDataMessage,
+	GroundTruthMessage,
+	TrafficCommandMessage,
+	TrafficUpdateMessage,
+	SL45MotionCommandMessage,
+	SL45VehicleCommunicationDataMessage
+};
+
+/**
+* Address struct and union to convert integer in pointer and vice versa. See OSI Sensor Model Packaging Specification 
+*/
+struct address {
+	union pointerUnion {
+		struct {
+			int lo;
+			int hi;
+		} base;
+		unsigned long long address;
+	} addr;
+	int size;
+	std::string name;
+};
+
+/**
+* Type definition of std::variant collection of all implemented OSI messages.
+*/
+typedef std::variant<
+	osi3::SensorView,
+	osi3::SensorViewConfiguration,
+	osi3::SensorData,
+	osi3::GroundTruth
+	//TrafficCommand (SL45)
+	//InVehicleSensorData (SL45?)
+
+> osiMessage_t;
+
+#endif // !OSIMESSAGES_H
