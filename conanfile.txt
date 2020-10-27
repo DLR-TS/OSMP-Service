@@ -1,0 +1,32 @@
+[requires]
+protobuf/3.11.4
+# not yet published... Installing from the projects github using CMake FetchContent Module instead
+#grpc/1.29.1@zcube/stable
+# requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.31.0/BUILDING.md#windows)
+nasm/2.14
+# replacement for grpc because it has a broken submodule reference. The referenced commit is actualle between versions 20200501 and 20200601, but a later version should also work
+#re2/20200801
+yaml-cpp/0.6.3
+catch2/2.12.1
+FakeIt/2.0.5@gasuketsu/stable
+# fmi4cpp dependencies:
+boost/1.66.0@conan/stable
+libzip/1.5.2@bincrafters/stable
+bzip2/1.0.8
+zlib/1.2.11
+
+
+[generators]
+cmake
+cmake_paths
+cmake_find_package
+
+[options]
+protobuf:lite=False
+#protobuf:shared=True
+protobuf:with_zlib=True
+boost:shared=True
+libzip:with_openssl=False
+
+[imports]
+bin, *.dll -> ./bin

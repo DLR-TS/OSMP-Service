@@ -1,0 +1,7 @@
+[submodule "lib/FMI4cpp"]
+	path = lib/FMI4cpp
+	url = https://github.com/NTNU-IHB/FMI4cpp.git
+[submodule "lib/open-simulation-interface"]
+	path = lib/open-simulation-interface
+	url = https://gitlab.sl4to5.de/deliverables/architecture/open-simulation-interface.git
+	branch = develop
