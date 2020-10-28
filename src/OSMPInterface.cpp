@@ -22,7 +22,7 @@ int OSMPInterface::init(float starttime) {
 	coSimSlave->exit_initialization_mode();
 
 	auto const model_description = coSimFMU->get_model_description();
-	//iterate over unknowns declared as output and create AddressMap
+	//iterate over unknowns declared as fmu inputs and create AddressMap
 	for (auto const& inputVar : *(model_description->model_variables)) {
 		if (inputVar.causality == fmi4cpp::fmi2::causality::input && inputVar.is_integer()) {
 			fmi2Integer integer;

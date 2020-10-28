@@ -30,8 +30,9 @@ void GRPCInterface::stopServer()
 
 grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa_rpc::SimConfig* config, CoSiMa_rpc::SimInt32* response)
 {
-	response->set_value(
-		osmpInterface.create(config->fmu()));
+	int i_response = osmpInterface.create(config->fmu());
+	i_response += osmpInterface.init();
+	response->set_value(i_response);
 	return grpc::Status::OK;
 }
 
