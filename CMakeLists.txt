@@ -104,38 +104,22 @@ endif(BUILD_SHARED_LIBS)
 
 
 ## generate grpc code
+# custom grcp cpp code generation script that is easier to use than gRPC's default function
+include(GenerateGRPC)
 # gRPC can handle relative files
 set(COSIMA_GRPC_PROTO_FILES
+    grpc_proto_files/CoSiMaMessages.proto
 	grpc_proto_files/simulation_interface/SimulationInterface.proto
+	grpc_proto_files/simulation_interface/OSMPSimulationInterface.proto
 )
-#string(REPLACE ".proto" ".grpc.pb.cc" COSIMA_GRPC_SRCS ${COSIMA_GRPC_PROTO_FILES})
-#string(REPLACE ".proto" ".grpc.pb.h" COSIMA_GRPC_HDRS ${COSIMA_GRPC_PROTO_FILES})
-#string(REPLACE ".proto" "_mock.grpc.pb.h" COSIMA_GRPC_MOCK_HDRS ${COSIMA_GRPC_PROTO_FILES})
-#string(REPLACE ".proto" ".pb.cc" COSIMA_PROTO_SRCS ${COSIMA_GRPC_PROTO_FILES})
-#string(REPLACE ".proto" ".pb.h" COSIMA_PROTO_HDRS ${COSIMA_GRPC_PROTO_FILES})
-# using a loop to convert to absolute output file paths
-foreach(PROTO_FILE ${COSIMA_GRPC_PROTO_FILES})
-	#get_filename_component(PROTO_FILE ${PROTO_FILE} NAME)
-	string(REPLACE ".proto" ".grpc.pb.cc" OUT ${PROTO_FILE})
-	set(COSIMA_GRPC_SRCS
-		${COSIMA_GRPC_SRCS} ${CMAKE_BINARY_DIR}/gens/${OUT})
-	string(REPLACE ".proto" ".grpc.pb.h" OUT ${PROTO_FILE})
-	set(COSIMA_GRPC_HDRS
-		${COSIMA_GRPC_HDRS} ${CMAKE_BINARY_DIR}/gens/${OUT})
-	string(REPLACE ".proto" "_mock.grpc.pb.h" OUT ${PROTO_FILE})
-	set(COSIMA_GRPC_MOCK_HDRS
-		${COSIMA_GRPC_MOCK_HDRS} ${CMAKE_BINARY_DIR}/gens/${OUT})
-	string(REPLACE ".proto" ".pb.cc" OUT ${PROTO_FILE})
-	set(COSIMA_PROTO_SRCS
-		${COSIMA_PROTO_SRCS} ${CMAKE_BINARY_DIR}/gens/${OUT})
-	string(REPLACE ".proto" ".pb.h" OUT ${PROTO_FILE})
-	set(COSIMA_PROTO_HDRS
-		${COSIMA_PROTO_HDRS} ${CMAKE_BINARY_DIR}/gens/${OUT})
-endforeach()
 
-set(_gRPC_PROTO_GENS_DIR ${CMAKE_BINARY_DIR}/gens)
-protobuf_generate_grpc_cpp(${COSIMA_GRPC_PROTO_FILES})
-add_library(OSMPGRPCLib ${COSIMA_PROTO_SRCS} ${COSIMA_GRPC_SRCS})
+add_library(OSMPGRPCLib ${COSIMA_PROTO_SRCS} ${COSIMA_GRPC_SRCS} ${COSIMA_GRPC_PROTO_FILES})
+generate_grpc_cpp(TARGET OSMPGRPCLib IMPORT_DIRS ${CONAN_INCLUDE_DIRS_PROTOBUF} lib/open-simulation-interface)
+if(BUILD_SHARED_LIBS)
+	target_link_libraries(OSMPGRPCLib PUBLIC open_simulation_interface)
+else()
+	target_link_libraries(OSMPGRPCLib PUBLIC open_simulation_interface_static)
+endif()
 target_link_libraries(OSMPGRPCLib PUBLIC grpc++)
 target_include_directories(OSMPGRPCLib BEFORE PUBLIC ${CMAKE_BINARY_DIR}/gens )
 target_link_libraries(OSMPClientLib PUBLIC OSMPGRPCLib)

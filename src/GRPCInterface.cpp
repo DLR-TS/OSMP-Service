@@ -7,7 +7,8 @@ void GRPCInterface::startServer(const bool nonBlocking)
 	}
 	grpc::ServerBuilder builder;
 	builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-	builder.RegisterService(this);
+	builder.RegisterService(static_cast<CoSiMa::rpc::SimulationInterface::Service*>(this));
+	builder.RegisterService(static_cast<CoSiMa::rpc::OSMPSimulationInterface::Service*>(this));
 	server = builder.BuildAndStart();
 	std::cout << "Server listening on " << server_address << std::endl;
 	if (!nonBlocking) {
@@ -28,28 +29,28 @@ void GRPCInterface::stopServer()
 	std::cout << "Server stopped" << std::endl;
 }
 
-grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa_rpc::SimConfig* config, CoSiMa_rpc::SimInt32* response)
+grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Int32* response)
 {
-	int i_response = osmpInterface.create(config->fmu());
+	int i_response = osmpInterface.create(config->fmu_path());
 	i_response += osmpInterface.init();
 	response->set_value(i_response);
 	return grpc::Status::OK;
 }
 
-grpc::Status GRPCInterface::GetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimString* request, CoSiMa_rpc::SimString* response) {
+grpc::Status GRPCInterface::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
 	response->set_value(
 		osmpInterface.read(request->value()));
 	return grpc::Status::OK;
 };
 
-grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimNamedString* request, CoSiMa_rpc::SimInt32* response) {
+grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
 	response->set_value(
 		osmpInterface.write(request->name(), request->value()));
 	return grpc::Status::OK;
 };
 
-grpc::Status GRPCInterface::DoStep(grpc::ServerContext* context, const CoSiMa_rpc::SimEmpty* request, CoSiMa_rpc::SimDouble* response) {
+grpc::Status GRPCInterface::DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) {
 	response->set_value(
-		osmpInterface.doStep());//step size 1
+		osmpInterface.doStep(request->value()));
 	return grpc::Status::OK;
 };

@@ -1,0 +1,12 @@
+syntax = "proto3";
+import "grpc_proto_files/CoSiMaMessages.proto";
+
+package CoSiMa.rpc;
+
+service OSMPSimulationInterface {
+	rpc SetConfig(OSMPConfig) returns (Int32) {}
+}
+
+message OSMPConfig {
+    string fmu_path = 1;
+}

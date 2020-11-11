@@ -11,8 +11,10 @@
 
 #include "grpc_proto_files/simulation_interface/SimulationInterface.pb.h"
 #include "grpc_proto_files/simulation_interface/SimulationInterface.grpc.pb.h"
+#include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.pb.h"
+#include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.grpc.pb.h"
 
-class GRPCInterface: public CoSiMa_rpc::SimulationInterface::Service
+class GRPCInterface: public CoSiMa::rpc::SimulationInterface::Service, public CoSiMa::rpc::OSMPSimulationInterface::Service
 {
 	std::shared_ptr<grpc::Server> server;
 	const std::string server_address;
@@ -26,10 +28,10 @@ public:
 	void startServer(const bool nonBlocking = false);
 	void stopServer();
 
-	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa_rpc::SimConfig* config, CoSiMa_rpc::SimInt32* response) override;
-	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimString* request, CoSiMa_rpc::SimString* response) override;
-	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa_rpc::SimNamedString* request, CoSiMa_rpc::SimInt32* response) override;
-	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa_rpc::SimEmpty* request, CoSiMa_rpc::SimDouble* response) override;
+	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Int32* response) override;
+	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
+	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
+	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) override;
 
 };
 #endif GRPCINTERFACE_H

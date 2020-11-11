@@ -1,26 +1,11 @@
 syntax = "proto3";
-// see TODO at message Empty in BaseInterface.proto
-//import "google/protobuf/Empty.proto";
-import "grpc_proto_files/base_interface/BaseInterface.proto";
+import "grpc_proto_files/CoSiMaMessages.proto";
+
+import "osi_common.proto";
 
 package CoSiMa.rpc;
 
 service CARLAInterface {
-	rpc GetIntValue(String) returns (Int32) {}
-	rpc GetBoolValue(String) returns (Bool) {}
-	rpc GetFloatValue(String) returns (Float) {}
-	rpc GetDoubleValue(String) returns (Double) {}
-	rpc GetStringValue(String) returns (String) {}
-
-	rpc SetIntValue(NamedInt32) returns (Int32) {}
-	rpc SetBoolValue(NamedBool) returns (Int32) {}
-	rpc SetFloatValue(NamedFloat) returns (Int32) {}
-	rpc SetDoubleValue(NamedDouble) returns (Int32) {}
-	rpc SetStringValue(NamedString) returns (Int32) {}
-
-	//TODO
-	rpc DoStep(Empty) returns (Double) {}
-
 	rpc SetConfig(CarlaConfig) returns (Int32) {}
 }
 
@@ -29,4 +14,20 @@ message CarlaConfig {
 	int32 carla_port = 2;
 	double transaction_timeout = 3;
 	double delta_seconds = 4;
+	repeated OSISensorViewExtras sensor_view_extras = 10;
+}
+
+message OSISensorViewExtras{
+	string prefixed_fmu_variable_name = 1;
+	// position in array corresponds to index of OSMPSensorViewOut message
+	SensorViewSensorMountingPosition sensor_mounting_position = 2;
+}
+
+message SensorViewSensorMountingPosition {
+	// position in array corresponds to index inside the *_sensor_view entry of the SensorView message with the given prefix
+	repeated osi3.MountingPosition generic_sensor_mounting_position = 1000;
+	repeated osi3.MountingPosition radar_sensor_mounting_position = 1001;
+	repeated osi3.MountingPosition lidar_sensor_mounting_position = 1002;
+	repeated osi3.MountingPosition camera_sensor_mounting_position = 1003;
+	repeated osi3.MountingPosition ultrasonic_sensor_mounting_position = 1004;
 }
