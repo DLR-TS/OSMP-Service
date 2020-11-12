@@ -1,6 +1,6 @@
 #include "OSMPInterface.h"
 
-int OSMPInterface::create(std::string path) {
+int OSMPInterface::create(const std::string& path) {
 	std::unique_ptr<fmi4cpp::fmi2::fmu> fmu = std::make_unique<fmi4cpp::fmi2::fmu>(path);
 	if (!fmu->supports_cs()) {
 		// FMU contains no cs model
@@ -33,12 +33,12 @@ int OSMPInterface::init(float starttime) {
 	return 0;
 }
 
-std::string OSMPInterface::read(std::string name) {
+std::string OSMPInterface::read(const std::string& name) {
 	if (fromFMUAddresses.size() == 0) {
 		return "";
 	}
 	//read message from FMU
-	for (auto address : fromFMUAddresses) {
+	for (auto& address : fromFMUAddresses) {
 		if (address.first == name) {
 			return readFromHeap(address.second);
 		}
@@ -46,12 +46,12 @@ std::string OSMPInterface::read(std::string name) {
 	return "";
 }
 
-int OSMPInterface::write(std::string name, std::string value) {
+int OSMPInterface::write(const std::string& name, const std::string& value) {
 	if (toFMUAddresses.size() == 0) {
 		return -1;
 	}
 	//write message to FMU 
-	for (auto address : toFMUAddresses) {
+	for (auto& address : toFMUAddresses) {
 		if (address.first == name) {
 			return writeToHeap(address.second, value);
 		}
@@ -59,7 +59,7 @@ int OSMPInterface::write(std::string name, std::string value) {
 	return -1;
 }
 
-std::string OSMPInterface::readFromHeap(address address) {
+std::string OSMPInterface::readFromHeap(const address& address) {
 	switch (getMessageType(address.name)) {
 	case SensorViewMessage:
 		if (!sensorView.ParseFromArray((const void*)address.addr.address, address.size)) {
@@ -113,7 +113,7 @@ std::string OSMPInterface::readFromHeap(address address) {
 
 };
 
-int OSMPInterface::writeToHeap(address &address, std::string value) {
+int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 	if ((void*)address.addr.address != nullptr) {
 		//free the allocated storage of previous osimessage
 		free((void*)address.addr.address);
@@ -263,7 +263,7 @@ int OSMPInterface::close() {
 }
 
 
-void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap, std::string name, int value) {
+void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value) {
 	//check for normal fmi variables count and valid
 	if (name == "count") {
 		this->count = value;
@@ -332,7 +332,7 @@ std::optional<OSMPInterface::OSMPFMUSlaveStateWrapper> OSMPInterface::OSMPFMUSla
 	return std::nullopt;
 }
 
-eOSIMessage OSMPInterface::getMessageType(std::string messageType) {
+eOSIMessage OSMPInterface::getMessageType(const std::string& messageType) {
 	if (messageType.find("SensorView") != std::string::npos
 		&& messageType.find("Config") == std::string::npos) {
 		return SensorViewMessage;

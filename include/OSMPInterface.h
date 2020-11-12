@@ -13,11 +13,11 @@
 class OSMPInterface 
 {
 public:
-	int create(std::string path);
+	int create(const std::string& path);
 	int init(float starttime = 0);
-	std::string read(std::string name);
+	std::string read(const std::string& name);
 	int doStep(double stepSize = 1);
-	int write(std::string name, std::string value);
+	int write(const std::string& name,const std::string& value);
 	int close();
 
 protected:
@@ -50,14 +50,14 @@ private:
 	\param std::string name name of the variable. Supported names are count, valid, <>.base.hi , <>.base.lo, <>.size.
 	\param int value The value to be stored.
 	*/
-	void saveToAddressMap(std::map<std::string, address> &addressMap, std::string name, int value);
+	void saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value);
 
 	int readOutputPointerFromFMU();
 	int writeInputPointerToFMU();
-	std::string readFromHeap(address address);
-	int writeToHeap(address &address, std::string value);
+	std::string readFromHeap(const address& address);
+	int writeToHeap(address& address, const std::string& value);
 
-	eOSIMessage getMessageType(std::string messageType);
+	eOSIMessage getMessageType(const std::string& messageType);
 
 	osi3::SensorView sensorView;
 	osi3::SensorViewConfiguration sensorViewConfiguration;
