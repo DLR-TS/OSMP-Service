@@ -4,8 +4,6 @@ protobuf/3.11.4
 #grpc/1.29.1@zcube/stable
 # requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.31.0/BUILDING.md#windows)
 nasm/2.14
-# replacement for grpc because it has a broken submodule reference. The referenced commit is actualle between versions 20200501 and 20200601, but a later version should also work
-#re2/20200801
 yaml-cpp/0.6.3
 catch2/2.12.1
 FakeIt/2.0.5@gasuketsu/stable

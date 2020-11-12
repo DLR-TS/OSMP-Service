@@ -81,25 +81,25 @@ add_subdirectory("include")
 add_subdirectory("test")
 
 #create library to
-add_library(OSMPClientLib ${COSIMA_SOURCE} ${COSIMA_INCLUDES})
-# OSMPClientLib exports no symbols, thereby preventing linking of its dll on windows. Force export of all global symbols
-set_property(TARGET OSMPClientLib PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
-target_include_directories(OSMPClientLib PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+add_library(OSMPServiceLib ${COSIMA_SOURCE} ${COSIMA_INCLUDES})
+# OSMPServiceLib exports no symbols, thereby preventing linking of its dll on windows. Force export of all global symbols
+set_property(TARGET OSMPServiceLib PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
+target_include_directories(OSMPServiceLib PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 # link conan managed dependencies
-target_link_libraries(OSMPClientLib PUBLIC CONAN_PKG::yaml-cpp)
+target_link_libraries(OSMPServiceLib PUBLIC CONAN_PKG::yaml-cpp)
 # FMI4cpp is not managed by conan, thus it is added here
-target_include_directories(OSMPClientLib PUBLIC fmi4cpp)
-target_link_libraries(OSMPClientLib PUBLIC fmi4cpp)
+target_include_directories(OSMPServiceLib PUBLIC fmi4cpp)
+target_link_libraries(OSMPServiceLib PUBLIC fmi4cpp)
 
 # OSI is not managed by conan, thus it is added here
-target_include_directories(OSMPClientLib PUBLIC open_simulation_interface_obj)#shared base of both static and shared OSI lib targets
+target_include_directories(OSMPServiceLib PUBLIC open_simulation_interface_obj)#shared base of both static and shared OSI lib targets
 # OSI has differently named targets for static and shared build
 if(BUILD_SHARED_LIBS)
 	# By default, OSI exports no symbols when building a dll, preventing linking to the shared library on windows. Force export of all global symbols
 	set_property(TARGET open_simulation_interface PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
-	target_link_libraries(OSMPClientLib PUBLIC open_simulation_interface)
+	target_link_libraries(OSMPServiceLib PUBLIC open_simulation_interface)
 else()
-	target_link_libraries(OSMPClientLib PUBLIC open_simulation_interface_static)
+	target_link_libraries(OSMPServiceLib PUBLIC open_simulation_interface_static)
 endif(BUILD_SHARED_LIBS)
 
 
@@ -122,9 +122,9 @@ else()
 endif()
 target_link_libraries(OSMPGRPCLib PUBLIC grpc++)
 target_include_directories(OSMPGRPCLib BEFORE PUBLIC ${CMAKE_BINARY_DIR}/gens )
-target_link_libraries(OSMPClientLib PUBLIC OSMPGRPCLib)
+target_link_libraries(OSMPServiceLib PUBLIC OSMPGRPCLib)
 # previous include is supposed to propagate, but is missing...
-target_include_directories(OSMPClientLib BEFORE PUBLIC ${CMAKE_BINARY_DIR}/gens )# $<TARGET_PROPERTY:OSMPGRPCLib,INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(OSMPServiceLib BEFORE PUBLIC ${CMAKE_BINARY_DIR}/gens )# $<TARGET_PROPERTY:OSMPGRPCLib,INTERFACE_INCLUDE_DIRECTORIES>)
 
 find_package(Catch2 REQUIRED)
 #add_executable(test_CoSiMa ${TESTFILES})
@@ -154,8 +154,5 @@ find_package(Catch2 REQUIRED)
 #include(Catch)
 #catch_discover_tests(test_CoSiMa)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/include/OSMPClient.h ${CMAKE_CURRENT_BINARY_DIR}/include/OSMPClient.h)
-#configure_file(${CMAKE_CURRENT_LIST_DIR}/src/OSMPClient.cpp ${CMAKE_CURRENT_BINARY_DIR}/src/OSMPClient.cpp)
-add_executable (OSMPClient "${CMAKE_CURRENT_LIST_DIR}/src/OSMPClient.cpp" "${CMAKE_CURRENT_BINARY_DIR}/include/OSMPClient.h")
-target_link_libraries(OSMPClient PUBLIC OSMPClientLib)
-target_include_directories(OSMPClient PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include/)
+add_executable (OSMPService "${CMAKE_CURRENT_LIST_DIR}/src/OSMPService.cpp" "${CMAKE_CURRENT_LIST_DIR}/include/OSMPService.h")
+target_link_libraries(OSMPService PUBLIC OSMPServiceLib)
