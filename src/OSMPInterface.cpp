@@ -16,7 +16,7 @@ int OSMPInterface::create(const std::string& path) {
 int OSMPInterface::init(float starttime) {
 	//Instance name cannot be set with FMU4cpp. The model identifier is used automatically instead
 	coSimSlave = coSimFMU->new_instance();
-	coSimSlave->set_debug_logging(true, { "OSI", "FMU", "OSMP" });
+	//coSimSlave->set_debug_logging(true, { "OSI", "FMU", "OSMP" });
 
 	coSimSlave->setup_experiment((fmi2Real)starttime);
 	coSimSlave->enter_initialization_mode();

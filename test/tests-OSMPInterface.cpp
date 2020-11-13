@@ -3,17 +3,9 @@
 #include "OSMPInterface.h"
 #include "TestResourceDirectory.h"
 
-std::string osimessage = "";
-
-TEST_CASE("OSMP Interface Test") {
+TEST_CASE("OSMP Interface Test","[OSMPInterface]") {
 
 	OSMPInterface source;
-
-	/*int create(std::string& path);
-	int init(float starttime = 0);
-	std::string read(std::string& name);
-	int write(std::string& name, std::string& value);
-	int doStep(double stepSize = 1);*/
 
 	CHECK(0 == source.create(testResourceDirectory + "/OSMPDummySource.fmu"));
 	CHECK(0 == source.init());

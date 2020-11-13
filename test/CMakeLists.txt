@@ -5,4 +5,5 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/TestResourceDirectory.h.in ${CMAKE_CURR
 set (TESTFILES 
 ${CMAKE_CURRENT_LIST_DIR}/tests-main.cpp
 ${CMAKE_CURRENT_LIST_DIR}/tests-OSMPInterface.cpp
+${CMAKE_CURRENT_LIST_DIR}/tests-GRPCInterface.cpp
 PARENT_SCOPE)
