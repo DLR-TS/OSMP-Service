@@ -1,0 +1,4 @@
+#pragma once
+
+// string holding the path to the test resource directory - configured by cmake
+const std::string testResourceDirectory = "${TEST_RESOURCE_DIR}";

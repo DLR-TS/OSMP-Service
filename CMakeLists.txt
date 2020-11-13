@@ -127,16 +127,16 @@ target_link_libraries(OSMPServiceLib PUBLIC OSMPGRPCLib)
 target_include_directories(OSMPServiceLib BEFORE PUBLIC ${CMAKE_BINARY_DIR}/gens )# $<TARGET_PROPERTY:OSMPGRPCLib,INTERFACE_INCLUDE_DIRECTORIES>)
 
 find_package(Catch2 REQUIRED)
-#add_executable(test_CoSiMa ${TESTFILES})
-#target_include_directories(test_CoSiMa PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${CMAKE_BINARY_DIR}/gens)
-#target_link_libraries(test_CoSiMa PRIVATE OSMPClientLib Catch2::Catch2 OSMPGRPCLib)
+add_executable(test_OSMPService ${TESTFILES})
+target_include_directories(test_OSMPService PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_BINARY_DIR}/gens)
+target_link_libraries(test_OSMPService PRIVATE OSMPServiceLib Catch2::Catch2 OSMPGRPCLib)
 
 #copy test resources to build folder
-#add_custom_command(TARGET test_CoSiMa PRE_BUILD
+#add_custom_command(TARGET test_OSMPService PRE_BUILD
 #                     COMMAND ${CMAKE_COMMAND} -E
-#                         make_directory $<TARGET_FILE_DIR:test_CoSiMa>/../test/resources/)
+#                         make_directory $<TARGET_FILE_DIR:test_OSMPService>/../test/resources/)
 #Feedthrough_cs_me.fmu contains definitions for both me and cs => created copies with edited modelDescription.xml
-#add_custom_command(TARGET test_CoSiMa PRE_BUILD
+#add_custom_command(TARGET test_OSMPService PRE_BUILD
 #                     COMMAND ${CMAKE_COMMAND} -E
 #                         copy_if_different
 #						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig1.yaml
@@ -148,11 +148,11 @@ find_package(Catch2 REQUIRED)
 #						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPCNetworkProxy.fmu
 #						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySensor.fmu
 #						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySource.fmu
-#						 $<TARGET_FILE_DIR:test_CoSiMa>/../test/resources/)
+#						 $<TARGET_FILE_DIR:test_OSMPService>/../test/resources/)
 
-#include(CTest)
-#include(Catch)
-#catch_discover_tests(test_CoSiMa)
+include(CTest)
+include(Catch)
+catch_discover_tests(test_OSMPService)
 
 add_executable (OSMPService "${CMAKE_CURRENT_LIST_DIR}/src/OSMPService.cpp" "${CMAKE_CURRENT_LIST_DIR}/include/OSMPService.h")
 target_link_libraries(OSMPService PUBLIC OSMPServiceLib)
