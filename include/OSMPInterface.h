@@ -20,6 +20,13 @@ public:
 	int write(const std::string& name,const std::string& value);
 	int close();
 
+	enum FMUState {
+		UNINITIALIZED = 0,
+		IN_INITIALIZATION_MODE = 1,//can perform algebraic loops for initialization
+		INITIALIZED=2,//ready for use, can perform steps etc.
+		TERMINATED=8// fmu was shutdown/destroyed/whatever
+	};
+
 protected:
 	class OSMPFMUSlaveStateWrapper {
 	private:
@@ -39,6 +46,7 @@ private:
 	//fmi4cpp::fmi4cppFMUstate state;
 	std::unique_ptr<fmi4cpp::fmi2::cs_fmu> coSimFMU;
 	std::shared_ptr<fmi4cpp::fmi2::cs_slave> coSimSlave;
+	FMUState fmuState = UNINITIALIZED;
 
 	/**
 	Temporary storage for osmp messages (name, size, address)

@@ -16,18 +16,29 @@ int OSMPInterface::create(const std::string& path) {
 int OSMPInterface::init(float starttime) {
 	//Instance name cannot be set with FMU4cpp. The model identifier is used automatically instead
 	coSimSlave = coSimFMU->new_instance();
+	coSimSlave->set_debug_logging(true, { "OSI", "FMU", "OSMP" });
 
 	coSimSlave->setup_experiment((fmi2Real)starttime);
 	coSimSlave->enter_initialization_mode();
-	coSimSlave->exit_initialization_mode();
+	fmuState = IN_INITIALIZATION_MODE;
 
 	auto const model_description = coSimFMU->get_model_description();
-	//iterate over unknowns declared as fmu inputs and create AddressMap
-	for (auto const& inputVar : *(model_description->model_variables)) {
-		if (inputVar.causality == fmi4cpp::fmi2::causality::input && inputVar.is_integer()) {
-			fmi2Integer integer;
-			coSimSlave->read_integer(inputVar.value_reference, integer);
-			saveToAddressMap(toFMUAddresses, inputVar.name, integer);
+	//iterate over unknowns declared as fmu inputs or outputs and create AddressMap
+	for (auto const& var : *(model_description->model_variables)) {
+		if (var.is_integer()) {
+			// possible inputs of develop following version sl45/v1.0.1:
+			// OSMPSensorViewIn, OSMPSensorDataIn, OSMPTrafficCommandIn of causality "input"
+			// OSMPSensorViewInConfig, OSMPGroundTruthInit of causality "parameter"
+			if (var.causality == fmi4cpp::fmi2::causality::input || fmi4cpp::fmi2::causality::parameter == var.causality) {
+				fmi2Integer integer;
+				coSimSlave->read_integer(var.value_reference, integer);
+				saveToAddressMap(toFMUAddresses, var.name, integer);
+			}
+			else if (fmi4cpp::fmi2::causality::output == var.causality || fmi4cpp::fmi2::causality::calculatedParameter == var.causality) {
+				fmi2Integer integer;
+				coSimSlave->read_integer(var.value_reference, integer);
+				saveToAddressMap(fromFMUAddresses, var.name, integer);
+			}
 		}
 	}
 	return 0;
@@ -36,6 +47,10 @@ int OSMPInterface::init(float starttime) {
 std::string OSMPInterface::read(const std::string& name) {
 	if (fromFMUAddresses.size() == 0) {
 		return "";
+	}
+	if (IN_INITIALIZATION_MODE == fmuState) {
+		//update pointers
+		readOutputPointerFromFMU();
 	}
 	//read message from FMU
 	for (auto& address : fromFMUAddresses) {
@@ -53,7 +68,11 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 	//write message to FMU 
 	for (auto& address : toFMUAddresses) {
 		if (address.first == name) {
-			return writeToHeap(address.second, value);
+			int result = writeToHeap(address.second, value);
+			if (IN_INITIALIZATION_MODE == fmuState) {
+				writeInputPointerToFMU();
+			}
+			return result;
 		}
 	}
 	return -1;
@@ -173,6 +192,15 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 };
 
 int OSMPInterface::doStep(double stepSize) {
+	if (IN_INITIALIZATION_MODE == fmuState) {
+		coSimSlave->exit_initialization_mode();
+		fmuState = INITIALIZED;
+	}
+	if (INITIALIZED != fmuState) {
+		//cannot use an uninitialized fmu
+		//TODO return type/value
+		return (int)std::errc::operation_not_permitted;
+	}
 	writeInputPointerToFMU();
 	//TODO which parts of FMIBridge::doStep are needed?
 			//TODO set independent tunable parameters
