@@ -173,8 +173,8 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 };
 
 int OSMPInterface::doStep(double stepSize) {
-	//TODO
-		//which parts of FMIBridge::doStep are needed?
+	writeInputPointerToFMU();
+	//TODO which parts of FMIBridge::doStep are needed?
 			//TODO set independent tunable parameters
 		//TODO set continuous- and discrete-time inputs and optionally also the derivatives of the former
 
