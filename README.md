@@ -7,3 +7,11 @@ If no parameter is given default is: 0.0.0.0:51425
 
 For test run copy the FMU from test to your build directory and start the OSMP-Client.
 In CoSiMa is a comment out test in test-OSMPInterface which uses the OSMP-Client.
+
+# manual build
+in root folder:
+```sh
+ mkdir build && cd build
+ cmake .. -DCMAKE_BUILD_TYPE=Release
+ cmake --build . --target OSMPService
+```

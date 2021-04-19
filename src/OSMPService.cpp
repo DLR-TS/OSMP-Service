@@ -1,5 +1,4 @@
-﻿#include "OSMPClient.h"
-#include "GRPCInterface.h"
+﻿#include "GRPCInterface.h"
 #include <filesystem>
 
 int main(int argc, char *argv[])

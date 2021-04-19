@@ -34,4 +34,4 @@ public:
 	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) override;
 
 };
-#endif GRPCINTERFACE_H
+#endif //!GRPCINTERFACE_H
