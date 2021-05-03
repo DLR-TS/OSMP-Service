@@ -9,7 +9,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(GIT_SUBMODULE "Check submodules during build" ON)
+if(MSVC)
+ option(DONT_FORCE_STATIC_LIBS "Building dynamic libraries fails for some targets because of incompatabilities in dependencies (protobuf, see FetchGRPC.cmake) and thus static lib's are enforced. Enable this option to abide CMAKE's BUILD_SHARED_LIBS variable" OFF)
+ if(NOT DONT_FORCE_STATIC_LIBS)
+ set(BUILD_SHARED_LIBS false)
+ message("Forcing the use of static libraries as building dynamic libraries fails for some targets using MSVC because of incompatabilities in some dependencies. Enable DONT_FORCE_STATIC_LIBS to unforce this behaviour")
+ endif(NOT DONT_FORCE_STATIC_LIBS)
+endif(MSVC)
+
+option(GIT_SUBMODULE "Check submodules during build" OFF)
 if(GIT_SUBMODULE)
 	find_package(Git QUIET)
 	if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
@@ -62,6 +70,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 include(FetchContent)
 include(${CMAKE_CURRENT_LIST_DIR}/CMake_FetchContent_Overrides.cmake OPTIONAL)
 
+# OSI is not distributed as conan package, but we already took care of installig its dependency (protobuf), so we can just fetch it
+include(FetchOpenSimulationInterface)
+
 # use our FetchGRPC.cmake module to add gRPC
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules ${CMAKE_MODULE_PATH})
 include(FetchGRPC)
@@ -70,9 +81,6 @@ include(FetchGRPC)
 # Still, we aren't using FMI4cpp's conanfile.txt and instead merge its conent into our conanfile.txt to have control of the used conan packages.
 # This allows us to unify package versions and remove unneeded options. (libzip:with_openssl introduces dependency on openssl, which collides with gRPC's boringssl)
 add_subdirectory(lib/FMI4cpp/ EXCLUDE_FROM_ALL)
-
-# add OSI as cmake subproject
-add_subdirectory ("lib/open-simulation-interface" EXCLUDE_FROM_ALL)
 
 ## main project
 # set up variables that are used below

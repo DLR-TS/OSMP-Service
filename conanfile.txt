@@ -3,7 +3,7 @@ protobuf/3.11.4
 # not yet published... Installing from the projects github using CMake FetchContent Module instead
 #grpc/1.29.1@zcube/stable
 # requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.31.0/BUILDING.md#windows)
-nasm/2.14
+nasm/2.15.05
 yaml-cpp/0.6.3
 catch2/2.12.1
 FakeIt/2.0.5@gasuketsu/stable
