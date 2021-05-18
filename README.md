@@ -12,6 +12,6 @@ In CoSiMa is a comment out test in test-OSMPInterface which uses the OSMP-Client
 in root folder:
 ```sh
  mkdir build && cd build
- cmake .. -DCMAKE_BUILD_TYPE=Release
+ cmake .. -DBUILD_SHARED_LIBS=false -DCMAKE_BUILD_TYPE=Release
  cmake --build . --target OSMPService
 ```
