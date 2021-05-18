@@ -17,7 +17,7 @@ if(MSVC)
  endif(NOT DONT_FORCE_STATIC_LIBS)
 endif(MSVC)
 
-option(GIT_SUBMODULE "Check submodules during build" OFF)
+option(GIT_SUBMODULE "Check submodules during build" ON)
 if(GIT_SUBMODULE)
 	find_package(Git QUIET)
 	if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")

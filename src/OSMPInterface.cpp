@@ -1,7 +1,11 @@
 #include "OSMPInterface.h"
 
 int OSMPInterface::create(const std::string& path) {
-	std::unique_ptr<fmi4cpp::fmi2::fmu> fmu = std::make_unique<fmi4cpp::fmi2::fmu>(path);
+	auto abs = std::filesystem::absolute(path);
+	if (!std::filesystem::exists(abs)) {
+		std::cout << "File does not exist: " << abs.string() << std::endl;
+	}
+	std::unique_ptr<fmi4cpp::fmi2::fmu> fmu = std::make_unique<fmi4cpp::fmi2::fmu>(abs.string());
 	if (!fmu->supports_cs()) {
 		// FMU contains no cs model
 		return 216373;
