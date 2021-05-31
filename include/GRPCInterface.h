@@ -20,11 +20,12 @@ class GRPCInterface: public CoSiMa::rpc::SimulationInterface::Service, public Co
 	const std::string server_address;
 	const std::chrono::milliseconds transaction_timeout;
 	std::unique_ptr<std::thread> server_thread;
+	bool debug;
 
 	OSMPInterface osmpInterface;
 
 public:
-	GRPCInterface(std::string server_address) : server_address(server_address), transaction_timeout(std::chrono::milliseconds(5000)) {};
+	GRPCInterface(std::string server_address, bool debug) : server_address(server_address), debug(debug), transaction_timeout(std::chrono::milliseconds(5000)) {};
 	void startServer(const bool nonBlocking = false);
 	void stopServer();
 

@@ -14,7 +14,7 @@ class OSMPInterface
 {
 public:
 	int create(const std::string& path);
-	int init(float starttime = 0);
+	int init(bool debug,float starttime = 0);
 	std::string read(const std::string& name);
 	int doStep(double stepSize = 1);
 	int write(const std::string& name,const std::string& value);
