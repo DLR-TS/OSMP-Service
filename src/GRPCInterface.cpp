@@ -9,6 +9,8 @@ void GRPCInterface::startServer(const bool nonBlocking)
 	builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
 	builder.RegisterService(static_cast<CoSiMa::rpc::SimulationInterface::Service*>(this));
 	builder.RegisterService(static_cast<CoSiMa::rpc::OSMPSimulationInterface::Service*>(this));
+	builder.SetMaxReceiveMessageSize(-1);
+	builder.SetMaxSendMessageSize(-1);
 	server = builder.BuildAndStart();
 	std::cout << "Server listening on " << server_address << std::endl;
 	if (!nonBlocking) {
