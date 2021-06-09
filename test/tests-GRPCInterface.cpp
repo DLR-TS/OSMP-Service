@@ -1,3 +1,7 @@
+/**
+@authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
+*/
+
 #include "catch2/catch.hpp"
 
 #include "GRPCInterface.h"
@@ -34,8 +38,8 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 
 	std::string horstAddrSource = "localhost:51426";
 	std::string horstAddrSensor = "localhost:51427";
-	GRPCInterface sourceGRPCService(horstAddrSource);
-	GRPCInterface sensorGRPCService(horstAddrSensor);
+	GRPCInterface sourceGRPCService(horstAddrSource, false);
+	GRPCInterface sensorGRPCService(horstAddrSensor, false);
 	sourceGRPCService.startServer(true);
 	sensorGRPCService.startServer(true);
 	grpc::ChannelArguments channelArgs;

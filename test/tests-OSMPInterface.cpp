@@ -1,3 +1,7 @@
+/**
+@authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
+*/
+
 #include "catch2/catch.hpp"
 
 #include "OSMPInterface.h"
@@ -8,7 +12,7 @@ TEST_CASE("OSMP Interface Test","[OSMPInterface]") {
 	OSMPInterface source;
 
 	CHECK(0 == source.create(testResourceDirectory + "/OSMPDummySource.fmu"));
-	CHECK(0 == source.init());
+	CHECK(0 == source.init(false));
 
 	// OSMP-FMUs have to abide FMI, thus this variable defined as ausality="output" variability="discrete" initial="exact" has to be readable. It can return a nullpointer
 	std::string serializedSensorView = source.read("OSMPSensorViewOut");
@@ -27,7 +31,7 @@ TEST_CASE("OSMP Interface Test","[OSMPInterface]") {
 	OSMPInterface sensor;
 
 	CHECK(0 == sensor.create(testResourceDirectory + "/OSMPDummySensor.fmu"));
-	CHECK(0 == sensor.init());
+	CHECK(0 == sensor.init(false));
 
 	CHECK(0 == sensor.write("OSMPSensorViewIn", serializedSensorView));
 
