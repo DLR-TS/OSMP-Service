@@ -1,3 +1,7 @@
+/**
+@authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
+*/
+
 #ifndef GRPCINTERFACE_H
 #define GRPCINTERFACE_H
 #include <string>

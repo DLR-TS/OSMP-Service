@@ -1,3 +1,7 @@
+/**
+@authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
+*/
+
 #ifndef OSIMESSAGES_H
 #define OSIMESSAGES_H
 
@@ -40,18 +44,5 @@ struct address {
 	int size;
 	std::string name;
 };
-
-/**
-* Type definition of std::variant collection of all implemented OSI messages.
-*/
-typedef std::variant<
-	osi3::SensorView,
-	osi3::SensorViewConfiguration,
-	osi3::SensorData,
-	osi3::GroundTruth
-	//TrafficCommand (SL45)
-	//InVehicleSensorData (SL45?)
-
-> osiMessage_t;
 
 #endif // !OSIMESSAGES_H
