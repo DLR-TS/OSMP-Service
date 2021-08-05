@@ -36,6 +36,10 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 	int i_response = osmpInterface.create(config->fmu_path());
 	i_response += osmpInterface.init(debug);
 	response->set_value(i_response);
+	for (int i = 0; i < config->parameter_size(); i++) {
+		const auto& parameter = config->parameter(i);
+		std::cout << "Parameter: " << parameter.name() << " Value: " << parameter.value() << std::endl;
+	}
 	return grpc::Status::OK;
 }
 
