@@ -21,6 +21,7 @@ public:
 	int init(bool debug, float starttime = 0);
 	std::string read(const std::string& name);
 	int doStep(double stepSize = 1);
+	void setParameter(std::vector<std::pair<std::string, std::string>>&);
 	int write(const std::string& name,const std::string& value);
 	int close();
 

@@ -49,6 +49,28 @@ int OSMPInterface::init(bool debug, float starttime) {
 	return 0;
 }
 
+void OSMPInterface::setParameter(std::vector<std::pair<std::string, std::string>>& parameters) {
+
+	if (parameters.size() == 0) {
+		return;
+	}
+
+	auto const model_description = coSimSlave->get_model_description();
+	//iterate over unknowns declared as fmu inputs or outputs and create AddressMap
+	for (auto const& var : *(model_description->model_variables)) {
+		if (var.is_string() & var.causality == fmi4cpp::fmi2::causality::parameter) {
+			
+			for (auto& parameter : parameters) {
+				if (parameter.first == var.name) {
+					coSimSlave->write_string(var.value_reference, parameter.second.c_str());
+					std::cout << "Set Parameter: " << parameter.first << " Value: " << parameter.second << "\n";
+				}
+			}
+		}
+	}
+	std::cout << std::endl;//flush after all parameters
+}
+
 std::string OSMPInterface::read(const std::string& name) {
 	if (fromFMUAddresses.size() == 0) {
 		return "";
