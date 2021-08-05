@@ -121,7 +121,7 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 		}
 		return trafficUpdate.SerializeAsString();
 		break;
-	case TrajectoryMessage:
+	case SL45TrajectoryMessage:
 		if (!trajectory.ParseFromArray((const void*)address.addr.address, address.size)) {
 			return "";
 		}
@@ -129,12 +129,6 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 		break;
 	case SL45MotionCommandMessage:
 		if (!motionCommand.ParseFromArray((const void*)address.addr.address, address.size)) {
-			return "";
-		}
-		return motionCommand.SerializeAsString();
-		break;
-  case SL45TrajectoryMessage:
-		if (!trajectory.ParseFromArray((const void*)address.addr.address, address.size)) {
 			return "";
 		}
 		return motionCommand.SerializeAsString();
@@ -191,7 +185,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		address.addr.address = (unsigned long long)malloc(address.size);
 		trafficUpdate.SerializeToArray((void*)address.addr.address, address.size);
 		break;
-	case TrajectoryMessage:
+	case SL45TrajectoryMessage:
 		trajectory.ParseFromString(value);
 		address.size = (int)trajectory.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
@@ -202,12 +196,6 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		address.size = (int)motionCommand.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
 		motionCommand.SerializeToArray((void*)address.addr.address, address.size);
-		break;
-	case SL45TrajectoryMessage:
-		trajectory.ParseFromString(value);
-		address.size = (int)trajectory.ByteSizeLong();
-		address.addr.address = (unsigned long long)malloc(address.size);
-		trajectory.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case SL45VehicleCommunicationDataMessage:
 		vehicleCommunicationData.ParseFromString(value);
