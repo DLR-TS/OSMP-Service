@@ -26,7 +26,7 @@ enum eOSIMessage {
 	GroundTruthMessage,
 	TrafficCommandMessage,
 	TrafficUpdateMessage,
-	TrajectoryMessage,
+	SL45TrajectoryMessage,
 	SL45MotionCommandMessage,
 	SL45VehicleCommunicationDataMessage
 };
