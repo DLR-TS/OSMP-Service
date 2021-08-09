@@ -97,7 +97,7 @@ std::string OSMPInterface::read(const std::string& name) {
 			return readFromHeap(address.second);
 		}
 	}
-	std::cout << "Could not find message" << name << "\n";
+	std::cout << "Could not find matching message:" << name << "\n";
 	return "";
 }
 
