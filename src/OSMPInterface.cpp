@@ -61,7 +61,7 @@ void OSMPInterface::setParameter(std::vector<std::pair<std::string, std::string>
 	//iterate over unknowns declared as fmu inputs or outputs and create AddressMap
 	for (auto const& var : *(model_description->model_variables)) {
 		if (var.is_string() & var.causality == fmi4cpp::fmi2::causality::parameter) {
-			
+
 			for (auto& parameter : parameters) {
 				if (parameter.first == var.name) {
 					coSimSlave->write_string(var.value_reference, parameter.second.c_str());
@@ -86,18 +86,18 @@ std::string OSMPInterface::read(const std::string& name) {
 		readOutputPointerFromFMU();
 	}
 	//read message from FMU
-   if (debug) {
-    std::cout << "Amount of Addresses: " << fromFMUAddresses.size() << "\n";
-  }
+	if (debug) {
+		std::cout << "Amount of Addresses: " << fromFMUAddresses.size() << "\n";
+	}
 	for (auto& address : fromFMUAddresses) {
- 		if (debug) {
+		if (debug) {
 			std::cout << "Found FMU Address: " << address.first << "\n";
 		}
-		if (address.first == name) {
+		if (address.first == name || address.first == name + "Out") {
 			return readFromHeap(address.second);
 		}
 	}
-	std::cout << "Could not find matching message:" << name << "\n";
+	std::cout << "Could not find matching message: " << name << "\n";
 	return "";
 }
 
@@ -111,7 +111,7 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 	}
 	//write message to FMU 
 	for (auto& address : toFMUAddresses) {
-		if (address.first == name) {
+		if (address.first == name || address.first == name + "In") {
 			int result = writeToHeap(address.second, value);
 			if (IN_INITIALIZATION_MODE == fmuState) {
 				writeInputPointerToFMU();
