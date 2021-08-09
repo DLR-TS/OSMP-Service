@@ -87,11 +87,14 @@ std::string OSMPInterface::read(const std::string& name) {
 	}
 	//read message from FMU
 	for (auto& address : fromFMUAddresses) {
+		if (debug) {
+			std::cout << "Found FMU Address: " << address.first << "\n";
+		}
 		if (address.first == name) {
 			return readFromHeap(address.second);
 		}
 	}
-	std::cout << "Could not find message" << name << "\n";
+	std::cout << "Could not find matching message:" << name << "\n";
 	return "";
 }
 
