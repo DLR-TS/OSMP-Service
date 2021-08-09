@@ -43,7 +43,7 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 		parameters.push_back(std::make_pair(parameter.name(), parameter.value()));
 	}
 	osmpInterface.setParameter(parameters);
-
+  std::cout << i_response << std::endl;
 	return grpc::Status::OK;
 }
 
@@ -60,6 +60,7 @@ grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const C
 };
 
 grpc::Status GRPCInterface::DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) {
+std::cout << "dostep" << std::endl;
 	response->set_value(
 		osmpInterface.doStep(request->value()));
 	return grpc::Status::OK;

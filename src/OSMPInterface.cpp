@@ -86,7 +86,13 @@ std::string OSMPInterface::read(const std::string& name) {
 		readOutputPointerFromFMU();
 	}
 	//read message from FMU
+   if (debug) {
+    std::cout << "Amount of Addresses: " << fromFMUAddresses.size() << "\n";
+  }
 	for (auto& address : fromFMUAddresses) {
+ 		if (debug) {
+			std::cout << "Found FMU Address: " << address.first << "\n";
+		}
 		if (address.first == name) {
 			return readFromHeap(address.second);
 		}
@@ -309,7 +315,7 @@ int OSMPInterface::doStep(double stepSize) {
 			}
 		}
 	}
-
+	std::cout << "ReadFMI fields to local memory\n";
 	//read all FMI fields to local memory
 	readOutputPointerFromFMU();
 	return 0;
