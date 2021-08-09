@@ -90,6 +90,8 @@ private:
 	stores the field \"count\" from fmi
 	*/
 	int count;
+
+	bool debug = false;
 };
 
 #endif // !OSMPInterface_H

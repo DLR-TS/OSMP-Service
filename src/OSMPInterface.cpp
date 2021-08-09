@@ -18,10 +18,12 @@ int OSMPInterface::create(const std::string& path) {
 }
 
 int OSMPInterface::init(bool debug, float starttime) {
+	this->debug = debug;
 	//Instance name cannot be set with FMU4cpp. The model identifier is used automatically instead
 	coSimSlave = coSimFMU->new_instance();
-	if (debug)
+	if (debug) {
 		coSimSlave->set_debug_logging(true, { "OSI", "FMU", "OSMP" });
+	}
 
 	coSimSlave->setup_experiment((fmi2Real)starttime);
 	coSimSlave->enter_initialization_mode();
@@ -73,10 +75,14 @@ void OSMPInterface::setParameter(std::vector<std::pair<std::string, std::string>
 
 std::string OSMPInterface::read(const std::string& name) {
 	if (fromFMUAddresses.size() == 0) {
+		std::cerr << "Read: No messages location to FMU for " << name << "defined" << "\n";
 		return "";
 	}
 	if (IN_INITIALIZATION_MODE == fmuState) {
 		//update pointers
+		if (debug) {
+			std::cout << "Update output pointers, because of FMUState == Initialization\n";
+		}
 		readOutputPointerFromFMU();
 	}
 	//read message from FMU
@@ -85,12 +91,17 @@ std::string OSMPInterface::read(const std::string& name) {
 			return readFromHeap(address.second);
 		}
 	}
+	std::cout << "Could not find message" << name << "\n";
 	return "";
 }
 
 int OSMPInterface::write(const std::string& name, const std::string& value) {
 	if (toFMUAddresses.size() == 0) {
+		std::cerr << "Write: No messages location to FMU for " << name << "defined" << "\n";
 		return -1;
+	}
+	if (debug) {
+		std::cout << "Write " << name << " Length: " << value.size() << "\n";
 	}
 	//write message to FMU 
 	for (auto& address : toFMUAddresses) {
@@ -242,14 +253,17 @@ int OSMPInterface::doStep(double stepSize) {
 	}
 	writeInputPointerToFMU();
 	//TODO which parts of FMIBridge::doStep are needed?
-			//TODO set independent tunable parameters
-		//TODO set continuous- and discrete-time inputs and optionally also the derivatives of the former
+	//TODO set independent tunable parameters
+	//TODO set continuous- and discrete-time inputs and optionally also the derivatives of the former
 
-		//TODO support rollback in case step is incomplete?
+	//TODO support rollback in case step is incomplete?
 	auto preStepState = OSMPFMUSlaveStateWrapper::tryGetStateOf(coSimSlave);
 
 	//TODO step by stepSize
 	if (!coSimSlave->step(stepSize)) {
+		if (debug) {
+			std::cout << "Call aysnchronous FMU\n";
+		}
 		while (fmi4cpp::status::Pending == coSimSlave->last_status()) {
 			//wait for asynchronous fmu to finish
 			std::this_thread::sleep_for(std::chrono::microseconds(10));
@@ -257,16 +271,22 @@ int OSMPInterface::doStep(double stepSize) {
 
 		switch (coSimSlave->last_status()) {
 		case fmi4cpp::status::Fatal:
+			std::cerr << "Status: Fatal\n";
 			return -1;//TODO decide on common error return values
 		case fmi4cpp::status::Error:
+			std::cerr << "Status: Error\n";
 			return -2;//TODO decide on common error return values
 		case fmi4cpp::status::Discard:
+			std::cout << "Status: Discard\n";
 			//If a pre step state could be captured and the slave supports step size variation, try performing smaller substeps instead of one stepSize step
 			if (!preStepState || !coSimSlave->get_model_description()->can_handle_variable_communication_step_size) {
 				return 2;
 			}
 			//restore state before failed step
 			coSimSlave->set_fmu_state(preStepState.value().state);
+			if (debug) {
+				std::cout << "Perform some smaller substeps\n";
+			}
 			// perform some smaller substeps
 			int substeps = 2;
 			for (int i = 0; i < substeps; i++) {
