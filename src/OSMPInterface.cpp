@@ -242,11 +242,20 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 };
 
 int OSMPInterface::doStep(double stepSize) {
+	if (debug) {
+		std::cout << "dostep method\n";
+	}
 	if (IN_INITIALIZATION_MODE == fmuState) {
+		if (debug) {
+			std::cout << "Try to exit initialization mode\n";
+		}
 		coSimSlave->exit_initialization_mode();
 		fmuState = INITIALIZED;
 	}
 	if (INITIALIZED != fmuState) {
+		if (debug) {
+			std::cout << "cannot use an uninitialized fmu\n";
+		}
 		//cannot use an uninitialized fmu
 		//TODO return type/value
 		return (int)std::errc::operation_not_permitted;
@@ -259,6 +268,9 @@ int OSMPInterface::doStep(double stepSize) {
 	//TODO support rollback in case step is incomplete?
 	auto preStepState = OSMPFMUSlaveStateWrapper::tryGetStateOf(coSimSlave);
 
+	if (debug) {
+		std::cout << "call step method of FMU with size: " << stepSize << "\n";
+	}
 	//TODO step by stepSize
 	if (!coSimSlave->step(stepSize)) {
 		if (debug) {
