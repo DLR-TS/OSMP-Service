@@ -8,7 +8,7 @@ yaml-cpp/0.6.3
 catch2/2.12.1
 FakeIt/2.0.5@gasuketsu/stable
 # fmi4cpp dependencies:
-boost/1.66.0@conan/stable
+boost/1.77.0
 libzip/1.5.2@bincrafters/stable
 bzip2/1.0.8
 zlib/1.2.11
