@@ -7,17 +7,19 @@ int main(int argc, char *argv[])
 
 	std::cout << "Welcome to OSMPClient." << std::endl;
 
-	std::cout << "Current directory: " << std::filesystem::current_path() << std::endl << std::endl;
+	std::cout << "Current directory: " << std::filesystem::current_path() << "\n" << std::endl;
 
+	//Server address deliberately chosen to accept any connection
 	std::string server_address = "0.0.0.0:51425";
-	if (1 < argc) {
-		server_address = argv[1];
-		if (2 < argc) {
-			std::string argument(argv[2]);
-			if (argument == "-d") {
-				debug = true;
-				std::cout << "Running in debug mode." << std::endl << std::endl;
-			}
+
+	for (int i = 2; i < argc; i++) {
+		if (argv[i]== "-d") {
+			debug = true;
+			std::cout << "Debug messages enabled." << std::endl;
+		}
+		else {
+			server_address = argv[i];
+			std::cout << "Server listens on: " << server_address << std::endl;
 		}
 	}
 

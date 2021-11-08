@@ -249,7 +249,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 
 int OSMPInterface::doStep(double stepSize) {
 	if (debug) {
-		std::cout << "dostep method\n";
+		std::cout << "dostep method with stepsize " << stepSize << std::endl;
 	}
 	if (IN_INITIALIZATION_MODE == fmuState) {
 		if (debug) {
@@ -260,24 +260,19 @@ int OSMPInterface::doStep(double stepSize) {
 	}
 	if (INITIALIZED != fmuState) {
 		if (debug) {
-			std::cout << "cannot use an uninitialized fmu\n";
+			std::cerr << "cannot use an uninitialized fmu" << std::endl;
 		}
-		//cannot use an uninitialized fmu
-		//TODO return type/value
 		return (int)std::errc::operation_not_permitted;
 	}
 	writeInputPointerToFMU();
-	//TODO which parts of FMIBridge::doStep are needed?
-	//TODO set independent tunable parameters
-	//TODO set continuous- and discrete-time inputs and optionally also the derivatives of the former
 
-	//TODO support rollback in case step is incomplete?
+	//Possible rollback if step can not be done
 	auto preStepState = OSMPFMUSlaveStateWrapper::tryGetStateOf(coSimSlave);
 
 	if (debug) {
 		std::cout << "call step method of FMU with size: " << stepSize << "\n";
 	}
-	//TODO step by stepSize
+
 	if (!coSimSlave->step(stepSize)) {
 		if (debug) {
 			std::cout << "Call aysnchronous FMU\n";
@@ -290,10 +285,10 @@ int OSMPInterface::doStep(double stepSize) {
 		switch (coSimSlave->last_status()) {
 		case fmi4cpp::status::Fatal:
 			std::cerr << "Status: Fatal\n";
-			return -1;//TODO decide on common error return values
+			return -1;
 		case fmi4cpp::status::Error:
 			std::cerr << "Status: Error\n";
-			return -2;//TODO decide on common error return values
+			return -2;
 		case fmi4cpp::status::Discard:
 			std::cout << "Status: Discard\n";
 			//If a pre step state could be captured and the slave supports step size variation, try performing smaller substeps instead of one stepSize step
@@ -315,7 +310,7 @@ int OSMPInterface::doStep(double stepSize) {
 			}
 		}
 	}
-	std::cout << "ReadFMI fields to local memory\n";
+	std::cout << "ReadFMI fields to local memory" << std::endl;
 	//read all FMI fields to local memory
 	readOutputPointerFromFMU();
 	return 0;
