@@ -3,7 +3,7 @@
 cmake_minimum_required (VERSION 3.8)
 message("Running with CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
 
-project ("OSMPClient" CXX)
+project ("OSMPService" CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
