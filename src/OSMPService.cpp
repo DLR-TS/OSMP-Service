@@ -12,16 +12,17 @@ int main(int argc, char *argv[])
 	//Server address deliberately chosen to accept any connection
 	std::string server_address = "0.0.0.0:51425";
 
-	for (int i = 2; i < argc; i++) {
-		if (argv[i]== "-d") {
+	for (int i = 1; i < argc; i++) {
+		if (std::string(argv[i]) == "-d") {
 			debug = true;
 			std::cout << "Debug messages enabled." << std::endl;
 		}
 		else {
 			server_address = argv[i];
-			std::cout << "Server listens on: " << server_address << std::endl;
 		}
 	}
+
+	std::cout << "Server listens on: " << server_address << std::endl;
 
 	GRPCInterface grpc(server_address, debug);
 	

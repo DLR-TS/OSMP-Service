@@ -12,7 +12,6 @@ void GRPCInterface::startServer(const bool nonBlocking)
 	builder.SetMaxReceiveMessageSize(-1);
 	builder.SetMaxSendMessageSize(-1);
 	server = builder.BuildAndStart();
-	std::cout << "Server listening on " << server_address << std::endl;
 	if (!nonBlocking) {
 		server->Wait();
 	}
