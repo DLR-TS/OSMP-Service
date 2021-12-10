@@ -111,13 +111,16 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 	}
 	//write message to FMU 
 	for (auto& address : toFMUAddresses) {
-		if (address.first == name || address.first == name + "In") {
+		if (matchingNames(name, address.first)) {
 			int result = writeToHeap(address.second, value);
 			if (IN_INITIALIZATION_MODE == fmuState) {
 				writeInputPointerToFMU();
 			}
 			return result;
 		}
+	}
+	if (debug) {
+		std::cout << "Write was not successful" << std::endl;
 	}
 	return -1;
 }
@@ -362,6 +365,36 @@ int OSMPInterface::close() {
 	return 0;
 }
 
+bool OSMPInterface::matchingNames(const std::string& name1, const std::string& name2) {
+	std::size_t openbracketposname1 = name1.find("[");
+	//no index:
+	if (openbracketposname1 == std::string::npos) {
+		if (name2 == name1 || name2 == name1 + "In" || name2 == name1 + "Out"
+			|| name1 == name2 + "In" || name1 == name2 + "Out"
+			)
+			return true;
+	}
+	else {
+		//with index
+		std::string name1WithoutIndex = name1.substr(0, openbracketposname1);
+		std::size_t openbracketposname2 = name2.find("[");
+		std::string name2WithoutIndex = name2.substr(0, openbracketposname1);
+
+		if (name2WithoutIndex.find(name1WithoutIndex) != std::string::npos
+			|| name1WithoutIndex.find(name2WithoutIndex) != std::string::npos
+			) {
+			//matching names
+			std::size_t closebracketposname1 = name1.find("]");
+			std::size_t closebracketposname2 = name2.find("]");
+			int name1_index = std::stoi(name1.substr(openbracketposname1 + 1, closebracketposname1 - 1));
+			int name2_index = std::stoi(name2.substr(openbracketposname2 + 1, closebracketposname2 - 1));
+			if (name1_index == name2_index) {
+				//matching index
+				return true;
+			}
+		}
+	}
+}
 
 void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value) {
 	//check for normal fmi variables count and valid

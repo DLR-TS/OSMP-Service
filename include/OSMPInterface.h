@@ -67,6 +67,7 @@ private:
 
 	int readOutputPointerFromFMU();
 	int writeInputPointerToFMU();
+	bool matchingNames(const std::string& name1, const std::string& name2);
 	std::string readFromHeap(const address& address);
 	int writeToHeap(address& address, const std::string& value);
 
