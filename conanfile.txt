@@ -6,10 +6,10 @@ protobuf/3.11.4
 nasm/2.15.05
 yaml-cpp/0.6.3
 catch2/2.12.1
-FakeIt/2.0.5@gasuketsu/stable
+fakeit/2.0.7
 # fmi4cpp dependencies:
 boost/1.77.0
-libzip/1.5.2@bincrafters/stable
+libzip/1.8.0
 bzip2/1.0.8
 zlib/1.2.11
 
@@ -24,7 +24,9 @@ protobuf:lite=False
 #protobuf:shared=True
 protobuf:with_zlib=True
 boost:shared=True
-libzip:with_openssl=False
+libzip:crypto=False
+libzip:with_lzma=False
+libzip:with_zstd=False
 
 [imports]
 bin, *.dll -> ./bin
