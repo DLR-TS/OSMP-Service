@@ -93,7 +93,7 @@ std::string OSMPInterface::read(const std::string& name) {
 		if (debug) {
 			std::cout << "Found FMU Address: " << address.first << "\n";
 		}
-		if (address.first == name || address.first == name + "Out") {
+		if (matchingNames(address.first, name)) {
 			return readFromHeap(address.second);
 		}
 	}
@@ -126,6 +126,16 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 }
 
 std::string OSMPInterface::readFromHeap(const address& address) {
+	if (debug) {
+		std::cout << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << "size: " << address.size << "\n";
+	}
+	if (address.addr.address == 0) {
+		if (!debug) {
+			std::cerr << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << "size: " << address.size << "\n";
+		}
+		std::cerr << "Pointer are not set correctly! Keep running with empty message." << std::endl;
+		return "";
+	}
 	switch (getMessageType(address.name)) {
 	case SensorViewMessage:
 		if (!sensorView.ParseFromArray((const void*)address.addr.address, address.size)) {
@@ -163,11 +173,11 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 		}
 		return trafficUpdate.SerializeAsString();
 		break;
-	case SL45TrajectoryMessage:
-		if (!trajectory.ParseFromArray((const void*)address.addr.address, address.size)) {
+	case SL45DynamicsRequestMessage:
+		if (!dynamicsRequest.ParseFromArray((const void*)address.addr.address, address.size)) {
 			return "";
 		}
-		return trajectory.SerializeAsString();
+		return dynamicsRequest.SerializeAsString();
 		break;
 	case SL45MotionCommandMessage:
 		if (!motionCommand.ParseFromArray((const void*)address.addr.address, address.size)) {
@@ -182,7 +192,6 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 		return vehicleCommunicationData.SerializeAsString();
 		break;
 	}
-
 };
 
 int OSMPInterface::writeToHeap(address& address, const std::string& value) {
@@ -227,11 +236,11 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		address.addr.address = (unsigned long long)malloc(address.size);
 		trafficUpdate.SerializeToArray((void*)address.addr.address, address.size);
 		break;
-	case SL45TrajectoryMessage:
-		trajectory.ParseFromString(value);
-		address.size = (int)trajectory.ByteSizeLong();
+	case SL45DynamicsRequestMessage:
+		dynamicsRequest.ParseFromString(value);
+		address.size = (int)dynamicsRequest.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		trajectory.SerializeToArray((void*)address.addr.address, address.size);
+		dynamicsRequest.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case SL45MotionCommandMessage:
 		motionCommand.ParseFromString(value);
@@ -246,7 +255,6 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		vehicleCommunicationData.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	}
-
 	return 0;
 };
 
@@ -478,7 +486,7 @@ eOSIMessage OSMPInterface::getMessageType(const std::string& messageType) {
 	else if (messageType.find("GroundTruth") != std::string::npos) { return GroundTruthMessage; }
 	else if (messageType.find("TrafficCommand") != std::string::npos) { return TrafficCommandMessage; }
 	else if (messageType.find("TrafficUpdate") != std::string::npos) { return TrafficUpdateMessage; }
-	else if (messageType.find("Trajectory") != std::string::npos) { return SL45TrajectoryMessage; }
+	else if (messageType.find("DynamicsRequest") != std::string::npos) { return SL45DynamicsRequestMessage; }
 	else if (messageType.find("MotionCommand") != std::string::npos) { return SL45MotionCommandMessage; }
 	else if (messageType.find("VehicleCommunicationData") != std::string::npos) { return SL45VehicleCommunicationDataMessage; }
 	else {

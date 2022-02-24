@@ -32,6 +32,10 @@ void GRPCInterface::stopServer()
 
 grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Int32* response)
 {
+	if (debug) {
+		std::cout << "Set Config: \n";
+		std::cout << config->fmu_path() << std::endl;
+	}
 	int i_response = osmpInterface.create(config->fmu_path());
 	i_response += osmpInterface.init(debug);
 	response->set_value(i_response);
@@ -39,10 +43,13 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 	std::vector<std::pair<std::string, std::string>> parameters{};
 	for (int i = 0; i < config->parameter_size(); i++) {
 		const auto& parameter = config->parameter(i);
+		if (debug) {
+			std::cout << parameter.name() << parameter.value() << std::endl;
+		}
 		parameters.push_back(std::make_pair(parameter.name(), parameter.value()));
 	}
 	osmpInterface.setParameter(parameters);
-  std::cout << i_response << std::endl;
+	std::cout << i_response << std::endl;
 	return grpc::Status::OK;
 }
 
