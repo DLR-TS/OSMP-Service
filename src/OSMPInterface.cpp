@@ -7,13 +7,19 @@ int OSMPInterface::create(const std::string& path) {
 	}
 	std::unique_ptr<fmi4cpp::fmi2::fmu> fmu = std::make_unique<fmi4cpp::fmi2::fmu>(abs.string());
 	if (!fmu->supports_cs()) {
-		// FMU contains no cs model
+		std::cout << "FMU contains no cs model" << std::endl;
 		return 216373;
 	}
 
 	// load co-simulation description from FMU
 	coSimFMU = fmu->as_cs_fmu();
+	if (debug) {
+		std::cout << "Try parsing model description" << std::endl;
+	}
 	auto modelDescription = coSimFMU->get_model_description();
+	if (debug) {
+		std::cout << "Parsed model description successfully" << std::endl;
+	}
 	return 0;
 }
 
@@ -38,11 +44,17 @@ int OSMPInterface::init(bool debug, float starttime) {
 			// OSMPSensorViewInConfig, OSMPGroundTruthInit of causality "parameter"
 			if (var.causality == fmi4cpp::fmi2::causality::input || fmi4cpp::fmi2::causality::parameter == var.causality) {
 				fmi2Integer integer;
+				if (debug) {
+					std::cout << "In Ref: " << var.value_reference << " " << var.name << std::endl;
+				}
 				coSimSlave->read_integer(var.value_reference, integer);
 				saveToAddressMap(toFMUAddresses, var.name, integer);
 			}
 			else if (fmi4cpp::fmi2::causality::output == var.causality || fmi4cpp::fmi2::causality::calculatedParameter == var.causality) {
 				fmi2Integer integer;
+				if (debug) {
+					std::cout << "Out Ref: " << var.value_reference << " " << var.name << std::endl;
+				}
 				coSimSlave->read_integer(var.value_reference, integer);
 				saveToAddressMap(fromFMUAddresses, var.name, integer);
 			}
@@ -107,9 +119,9 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 		return -1;
 	}
 	if (debug) {
-		std::cout << "Write " << name << " Length: " << value.size() << "\n";
+		std::cout << "Write " << name << " Length: " << value.size() << std::endl;
 	}
-	//write message to FMU 
+	//write message to FMU
 	for (auto& address : toFMUAddresses) {
 		if (matchingNames(name, address.first)) {
 			int result = writeToHeap(address.second, value);
@@ -192,6 +204,7 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 		return vehicleCommunicationData.SerializeAsString();
 		break;
 	}
+	return "";
 };
 
 int OSMPInterface::writeToHeap(address& address, const std::string& value) {
@@ -402,6 +415,7 @@ bool OSMPInterface::matchingNames(const std::string& name1, const std::string& n
 			}
 		}
 	}
+	return false;
 }
 
 void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value) {
