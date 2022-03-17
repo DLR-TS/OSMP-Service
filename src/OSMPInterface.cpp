@@ -195,6 +195,7 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 		if (!motionCommand.ParseFromArray((const void*)address.addr.address, address.size)) {
 			return "";
 		}
+		std::cout << motionCommand.DebugString() << std::endl;
 		return motionCommand.SerializeAsString();
 		break;
 	case SL45VehicleCommunicationDataMessage:
@@ -229,6 +230,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		sensorData.ParseFromString(value);
 		address.size = (int)sensorData.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		std::cout << sensorData.DebugString() << std::endl;
 		sensorData.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case GroundTruthMessage:
@@ -241,6 +243,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		trafficCommand.ParseFromString(value);
 		address.size = (int)trafficCommand.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		std::cout << trafficCommand.DebugString() << std::endl;
 		trafficCommand.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case TrafficUpdateMessage:
@@ -265,6 +268,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		vehicleCommunicationData.ParseFromString(value);
 		address.size = (int)vehicleCommunicationData.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		std::cout << vehicleCommunicationData.DebugString() << std::endl;
 		vehicleCommunicationData.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	}
