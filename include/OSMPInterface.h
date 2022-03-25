@@ -18,7 +18,7 @@ class OSMPInterface
 {
 public:
 	int create(const std::string& path);
-	int init(bool debug, float starttime = 0);
+	int init(bool verbose, float starttime = 0);
 	std::string read(const std::string& name);
 	int doStep(double stepSize = 1);
 	void setParameter(std::vector<std::pair<std::string, std::string>>&);
@@ -91,8 +91,10 @@ private:
 	stores the field \"count\" from fmi
 	*/
 	int count;
-
-	bool debug = false;
+	/**
+	* verbose logs
+	*/
+	bool verbose = false;
 };
 
 #endif // !OSMPInterface_H

@@ -13,21 +13,21 @@ int OSMPInterface::create(const std::string& path) {
 
 	// load co-simulation description from FMU
 	coSimFMU = fmu->as_cs_fmu();
-	if (debug) {
+	if (verbose) {
 		std::cout << "Try parsing model description" << std::endl;
 	}
 	auto modelDescription = coSimFMU->get_model_description();
-	if (debug) {
+	if (verbose) {
 		std::cout << "Parsed model description successfully" << std::endl;
 	}
 	return 0;
 }
 
-int OSMPInterface::init(bool debug, float starttime) {
-	this->debug = debug;
+int OSMPInterface::init(bool verbose, float starttime) {
+	this->verbose = verbose;
 	//Instance name cannot be set with FMU4cpp. The model identifier is used automatically instead
 	coSimSlave = coSimFMU->new_instance();
-	if (debug) {
+	if (verbose) {
 		coSimSlave->set_debug_logging(true, { "OSI", "FMU", "OSMP" });
 	}
 
@@ -44,7 +44,7 @@ int OSMPInterface::init(bool debug, float starttime) {
 			// OSMPSensorViewInConfig, OSMPGroundTruthInit of causality "parameter"
 			if (var.causality == fmi4cpp::fmi2::causality::input || fmi4cpp::fmi2::causality::parameter == var.causality) {
 				fmi2Integer integer;
-				if (debug) {
+				if (verbose) {
 					std::cout << "In Ref: " << var.value_reference << " " << var.name << std::endl;
 				}
 				coSimSlave->read_integer(var.value_reference, integer);
@@ -52,7 +52,7 @@ int OSMPInterface::init(bool debug, float starttime) {
 			}
 			else if (fmi4cpp::fmi2::causality::output == var.causality || fmi4cpp::fmi2::causality::calculatedParameter == var.causality) {
 				fmi2Integer integer;
-				if (debug) {
+				if (verbose) {
 					std::cout << "Out Ref: " << var.value_reference << " " << var.name << std::endl;
 				}
 				coSimSlave->read_integer(var.value_reference, integer);
@@ -92,17 +92,17 @@ std::string OSMPInterface::read(const std::string& name) {
 	}
 	if (IN_INITIALIZATION_MODE == fmuState) {
 		//update pointers
-		if (debug) {
+		if (verbose) {
 			std::cout << "Update output pointers, because of FMUState == Initialization\n";
 		}
 		readOutputPointerFromFMU();
 	}
 	//read message from FMU
-	if (debug) {
+	if (verbose) {
 		std::cout << "Amount of Addresses: " << fromFMUAddresses.size() << "\n";
 	}
 	for (auto& address : fromFMUAddresses) {
-		if (debug) {
+		if (verbose) {
 			std::cout << "Found FMU Address: " << address.first << "\n";
 		}
 		if (matchingNames(address.first, name)) {
@@ -118,7 +118,7 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 		std::cerr << "Write: No messages location to FMU for " << name << "defined" << "\n";
 		return -1;
 	}
-	if (debug) {
+	if (verbose) {
 		std::cout << "Write " << name << " Length: " << value.size() << std::endl;
 	}
 	//write message to FMU
@@ -131,18 +131,18 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 			return result;
 		}
 	}
-	if (debug) {
+	if (verbose) {
 		std::cout << "Write was not successful" << std::endl;
 	}
 	return -1;
 }
 
 std::string OSMPInterface::readFromHeap(const address& address) {
-	if (debug) {
+	if (verbose) {
 		std::cout << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << "size: " << address.size << "\n";
 	}
 	if (address.addr.address == 0) {
-		if (!debug) {
+		if (!verbose) {
 			std::cerr << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << "size: " << address.size << "\n";
 		}
 		std::cerr << "Pointer are not set correctly! Keep running with empty message." << std::endl;
@@ -276,18 +276,18 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 };
 
 int OSMPInterface::doStep(double stepSize) {
-	if (debug) {
+	if (verbose) {
 		std::cout << "dostep method with stepsize " << stepSize << std::endl;
 	}
 	if (IN_INITIALIZATION_MODE == fmuState) {
-		if (debug) {
+		if (verbose) {
 			std::cout << "Try to exit initialization mode\n";
 		}
 		coSimSlave->exit_initialization_mode();
 		fmuState = INITIALIZED;
 	}
 	if (INITIALIZED != fmuState) {
-		if (debug) {
+		if (verbose) {
 			std::cerr << "cannot use an uninitialized fmu" << std::endl;
 		}
 		return (int)std::errc::operation_not_permitted;
@@ -297,12 +297,12 @@ int OSMPInterface::doStep(double stepSize) {
 	//Possible rollback if step can not be done
 	auto preStepState = OSMPFMUSlaveStateWrapper::tryGetStateOf(coSimSlave);
 
-	if (debug) {
+	if (verbose) {
 		std::cout << "call step method of FMU with size: " << stepSize << "\n";
 	}
 
 	if (!coSimSlave->step(stepSize)) {
-		if (debug) {
+		if (verbose) {
 			std::cout << "Call aysnchronous FMU\n";
 		}
 		while (fmi4cpp::status::Pending == coSimSlave->last_status()) {
@@ -325,7 +325,7 @@ int OSMPInterface::doStep(double stepSize) {
 			}
 			//restore state before failed step
 			coSimSlave->set_fmu_state(preStepState.value().state);
-			if (debug) {
+			if (verbose) {
 				std::cout << "Perform some smaller substeps\n";
 			}
 			// perform some smaller substeps

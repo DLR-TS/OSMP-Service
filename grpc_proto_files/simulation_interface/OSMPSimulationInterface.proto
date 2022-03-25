@@ -5,9 +5,29 @@ package CoSiMa.rpc;
 
 service OSMPSimulationInterface {
 	rpc SetConfig(OSMPConfig) returns (Int32) {}
+	rpc UploadFMU(FMU) returns (UploadStatus) {}
 }
 
 message OSMPConfig {
-    string fmu_path = 1;
+	string fmupath = 1;
 	repeated NamedString parameter = 2;
+}
+
+message FMU{
+    repeated Chunk chunk = 1;
+}
+
+message Chunk {
+    bytes content = 1;
+}
+
+enum UploadStatusCode {
+    Unknown = 0;
+    Ok = 1;
+    Failed = 2;
+}
+
+message UploadStatus {
+    string Message = 1;
+    UploadStatusCode Code = 2;
 }

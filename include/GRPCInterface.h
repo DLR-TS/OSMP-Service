@@ -5,6 +5,7 @@
 #ifndef GRPCINTERFACE_H
 #define GRPCINTERFACE_H
 #include <string>
+#include <fstream>
 #include "OSMPInterface.h"
 
 #include <grpc/grpc.h>
@@ -24,16 +25,18 @@ class GRPCInterface: public CoSiMa::rpc::SimulationInterface::Service, public Co
 	const std::string server_address;
 	const std::chrono::milliseconds transaction_timeout;
 	std::unique_ptr<std::thread> server_thread;
-	bool debug;
+	bool verbose;
+	std::string fmu_name = "OSMP-FMU.fmu";
 
 	OSMPInterface osmpInterface;
 
 public:
-	GRPCInterface(std::string server_address, bool debug) : server_address(server_address), debug(debug), transaction_timeout(std::chrono::milliseconds(5000)) {};
+	GRPCInterface(std::string server_address, bool verbose) : server_address(server_address), verbose(verbose), transaction_timeout(std::chrono::milliseconds(5000)) {};
 	void startServer(const bool nonBlocking = false);
 	void stopServer();
 
 	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Int32* response) override;
+	virtual grpc::Status UploadFMU(grpc::ServerContext* context, const CoSiMa::rpc::FMU* request, ::CoSiMa::rpc::UploadStatus* response) override;
 	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
 	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
 	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) override;

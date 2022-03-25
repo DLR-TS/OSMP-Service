@@ -32,24 +32,43 @@ void GRPCInterface::stopServer()
 
 grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Int32* response)
 {
-	if (debug) {
-		std::cout << "Set Config: \n";
-		std::cout << config->fmu_path() << std::endl;
+	if (config->fmupath().size() >= 5) {//a.fmu
+		//try to find local fmu
+		fmu_name = config->fmupath();
+		if (verbose) {
+			std::cout << "Path to FMU received instead of FMU itself: " << fmu_name << std::endl;
+		}
 	}
-	int i_response = osmpInterface.create(config->fmu_path());
-	i_response += osmpInterface.init(debug);
+	int i_response = osmpInterface.create(fmu_name);
+	i_response += osmpInterface.init(verbose);
 	response->set_value(i_response);
 	//set parameters
 	std::vector<std::pair<std::string, std::string>> parameters{};
 	for (int i = 0; i < config->parameter_size(); i++) {
 		const auto& parameter = config->parameter(i);
-		if (debug) {
+		if (verbose) {
 			std::cout << parameter.name() << parameter.value() << std::endl;
 		}
 		parameters.push_back(std::make_pair(parameter.name(), parameter.value()));
 	}
 	osmpInterface.setParameter(parameters);
 	std::cout << i_response << std::endl;
+	return grpc::Status::OK;
+}
+
+grpc::Status GRPCInterface::UploadFMU(grpc::ServerContext* context, const CoSiMa::rpc::FMU* request, ::CoSiMa::rpc::UploadStatus* response) {
+	if (verbose) {
+		std::cout << "Write FMU." << std::endl;
+	}
+
+	std::ofstream binFile(fmu_name, std::ofstream::out | std::ios::binary);
+	int chunksize = request->chunk_size();
+	for (int i = 0; i < chunksize; i++) {
+		const char* c = request->chunk(i).content().c_str();
+		binFile.put(*c);
+	}
+	binFile.close();
+
 	return grpc::Status::OK;
 }
 
