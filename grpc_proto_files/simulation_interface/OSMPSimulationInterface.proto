@@ -14,11 +14,7 @@ message OSMPConfig {
 }
 
 message FMU{
-    repeated Chunk chunk = 1;
-}
-
-message Chunk {
-    bytes content = 1;
+    bytes binaryFMU = 1;
 }
 
 enum UploadStatusCode {

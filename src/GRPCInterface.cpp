@@ -61,13 +61,12 @@ grpc::Status GRPCInterface::UploadFMU(grpc::ServerContext* context, const CoSiMa
 		std::cout << "Write FMU." << std::endl;
 	}
 
-	std::ofstream binFile(fmu_name, std::ofstream::out | std::ios::binary);
-	int chunksize = request->chunk_size();
-	for (int i = 0; i < chunksize; i++) {
-		const char* c = request->chunk(i).content().c_str();
-		binFile.put(*c);
-	}
+	std::ofstream binFile(fmu_name, std::ios::binary);
+	std::string fmu = request->binaryfmu();
+	binFile.write(fmu.c_str(), fmu.size());
 	binFile.close();
+
+	response->set_code(CoSiMa::rpc::UploadStatusCode::Ok);
 
 	return grpc::Status::OK;
 }
