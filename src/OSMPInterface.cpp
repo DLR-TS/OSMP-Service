@@ -139,11 +139,11 @@ int OSMPInterface::write(const std::string& name, const std::string& value) {
 
 std::string OSMPInterface::readFromHeap(const address& address) {
 	if (verbose) {
-		std::cout << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << "size: " << address.size << "\n";
+		std::cout << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << " size: " << address.size << "\n";
 	}
 	if (address.addr.address == 0) {
 		if (!verbose) {
-			std::cerr << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << "size: " << address.size << "\n";
+			std::cerr << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << " size: " << address.size << "\n";
 		}
 		std::cerr << "Pointer are not set correctly! Keep running with empty message." << std::endl;
 		return "";
@@ -151,60 +151,96 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 	switch (getMessageType(address.name)) {
 	case SensorViewMessage:
 		if (!sensorView.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "SensorView: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << sensorView.DebugString() << std::endl;
 		}
 		return sensorView.SerializeAsString();
 		break;
 	case SensorViewConfigurationMessage:
 		if (!sensorViewConfiguration.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "SensorViewConfiguration: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << sensorViewConfiguration.DebugString() << std::endl;
 		}
 		return sensorViewConfiguration.SerializeAsString();
 		break;
 	case SensorDataMessage:
 		if (!sensorData.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "SensorData: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << sensorData.DebugString() << std::endl;
 		}
 		return sensorData.SerializeAsString();
 		break;
 	case GroundTruthMessage:
 		if (!groundTruth.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "GroundTruth: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << groundTruth.DebugString() << std::endl;
 		}
 		return groundTruth.SerializeAsString();
 		break;
 	case TrafficCommandMessage:
 		if (!trafficCommand.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "TrafficCommand: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << trafficCommand.DebugString() << std::endl;
 		}
 		return trafficCommand.SerializeAsString();
 		break;
 	case TrafficUpdateMessage:
 		if (!trafficUpdate.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "TrafficUpdate: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << trafficUpdate.DebugString() << std::endl;
 		}
 		return trafficUpdate.SerializeAsString();
 		break;
 	case SL45DynamicsRequestMessage:
 		if (!dynamicsRequest.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "DynamicsRequest: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << dynamicsRequest.DebugString() << std::endl;
 		}
 		return dynamicsRequest.SerializeAsString();
 		break;
 	case SL45MotionCommandMessage:
 		if (!motionCommand.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "MotionCommand: Parse from pointer unsuccessful" << std::endl;
 			return "";
 		}
-		std::cout << motionCommand.DebugString() << std::endl;
+		if (verbose) {
+			std::cout << motionCommand.DebugString() << std::endl;
+		}
 		return motionCommand.SerializeAsString();
 		break;
 	case SL45VehicleCommunicationDataMessage:
 		if (!vehicleCommunicationData.ParseFromArray((const void*)address.addr.address, address.size)) {
+			std::cerr << "VehicleCommunicationData: Parse from pointer unsuccessful" << std::endl;
 			return "";
+		}
+		if (verbose) {
+			std::cout << vehicleCommunicationData.DebugString() << std::endl;
 		}
 		return vehicleCommunicationData.SerializeAsString();
 		break;
 	}
+	std::cerr << "No match of wanted message: " << address.name << std::endl;
 	return "";
 };
 
@@ -218,57 +254,81 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		sensorView.ParseFromString(value);
 		address.size = (int)sensorView.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		if (verbose) {
+			std::cout << sensorView.DebugString() << std::endl;
+		}
 		sensorView.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case SensorViewConfigurationMessage:
 		sensorViewConfiguration.ParseFromString(value);
 		address.size = (int)sensorViewConfiguration.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		if (verbose) {
+			std::cout << sensorViewConfiguration.DebugString() << std::endl;
+		}
 		sensorViewConfiguration.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case SensorDataMessage:
 		sensorData.ParseFromString(value);
 		address.size = (int)sensorData.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		std::cout << sensorData.DebugString() << std::endl;
+		if (verbose) {
+			std::cout << sensorData.DebugString() << std::endl;
+		}
 		sensorData.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case GroundTruthMessage:
 		groundTruth.ParseFromString(value);
 		address.size = (int)groundTruth.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		if (verbose) {
+			std::cout << groundTruth.DebugString() << std::endl;
+		}
 		groundTruth.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case TrafficCommandMessage:
 		trafficCommand.ParseFromString(value);
 		address.size = (int)trafficCommand.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		std::cout << trafficCommand.DebugString() << std::endl;
+		if (verbose) {
+			std::cout << trafficCommand.DebugString() << std::endl;
+		}
 		trafficCommand.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case TrafficUpdateMessage:
 		trafficUpdate.ParseFromString(value);
 		address.size = (int)trafficUpdate.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		if (verbose) {
+			std::cout << trafficUpdate.DebugString() << std::endl;
+		}
 		trafficUpdate.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case SL45DynamicsRequestMessage:
 		dynamicsRequest.ParseFromString(value);
 		address.size = (int)dynamicsRequest.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		if (verbose) {
+			std::cout << dynamicsRequest.DebugString() << std::endl;
+		}
 		dynamicsRequest.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case SL45MotionCommandMessage:
 		motionCommand.ParseFromString(value);
 		address.size = (int)motionCommand.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
+		if (verbose) {
+			std::cout << motionCommand.DebugString() << std::endl;
+		}
 		motionCommand.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	case SL45VehicleCommunicationDataMessage:
 		vehicleCommunicationData.ParseFromString(value);
 		address.size = (int)vehicleCommunicationData.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		std::cout << vehicleCommunicationData.DebugString() << std::endl;
+		if (verbose) {
+			std::cout << vehicleCommunicationData.DebugString() << std::endl;
+		}
 		vehicleCommunicationData.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	}
