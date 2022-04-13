@@ -47,8 +47,7 @@ int OSMPInterface::init(bool verbose, float starttime) {
 				if (verbose) {
 					std::cout << "In Ref: " << var.value_reference << " " << var.name << std::endl;
 				}
-				coSimSlave->read_integer(var.value_reference, integer);
-				saveToAddressMap(toFMUAddresses, var.name, integer);
+				saveToAddressMap(toFMUAddresses, var.name, 0);
 			}
 			else if (fmi4cpp::fmi2::causality::output == var.causality || fmi4cpp::fmi2::causality::calculatedParameter == var.causality) {
 				fmi2Integer integer;
@@ -254,8 +253,8 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		sensorView.ParseFromString(value);
 		address.size = (int)sensorView.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
-			std::cout << sensorView.DebugString() << std::endl;
+		if (verbose && value.size()) {
+				std::cout << sensorView.DebugString() << std::endl;
 		}
 		sensorView.SerializeToArray((void*)address.addr.address, address.size);
 		break;
@@ -263,7 +262,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		sensorViewConfiguration.ParseFromString(value);
 		address.size = (int)sensorViewConfiguration.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << sensorViewConfiguration.DebugString() << std::endl;
 		}
 		sensorViewConfiguration.SerializeToArray((void*)address.addr.address, address.size);
@@ -272,7 +271,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		sensorData.ParseFromString(value);
 		address.size = (int)sensorData.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << sensorData.DebugString() << std::endl;
 		}
 		sensorData.SerializeToArray((void*)address.addr.address, address.size);
@@ -281,7 +280,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		groundTruth.ParseFromString(value);
 		address.size = (int)groundTruth.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << groundTruth.DebugString() << std::endl;
 		}
 		groundTruth.SerializeToArray((void*)address.addr.address, address.size);
@@ -290,7 +289,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		trafficCommand.ParseFromString(value);
 		address.size = (int)trafficCommand.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << trafficCommand.DebugString() << std::endl;
 		}
 		trafficCommand.SerializeToArray((void*)address.addr.address, address.size);
@@ -299,7 +298,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		trafficUpdate.ParseFromString(value);
 		address.size = (int)trafficUpdate.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << trafficUpdate.DebugString() << std::endl;
 		}
 		trafficUpdate.SerializeToArray((void*)address.addr.address, address.size);
@@ -308,7 +307,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		dynamicsRequest.ParseFromString(value);
 		address.size = (int)dynamicsRequest.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << dynamicsRequest.DebugString() << std::endl;
 		}
 		dynamicsRequest.SerializeToArray((void*)address.addr.address, address.size);
@@ -317,7 +316,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		motionCommand.ParseFromString(value);
 		address.size = (int)motionCommand.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << motionCommand.DebugString() << std::endl;
 		}
 		motionCommand.SerializeToArray((void*)address.addr.address, address.size);
@@ -326,7 +325,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		vehicleCommunicationData.ParseFromString(value);
 		address.size = (int)vehicleCommunicationData.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose) {
+		if (verbose && value.size()) {
 			std::cout << vehicleCommunicationData.DebugString() << std::endl;
 		}
 		vehicleCommunicationData.SerializeToArray((void*)address.addr.address, address.size);
@@ -485,7 +484,7 @@ bool OSMPInterface::matchingNames(const std::string& name1, const std::string& n
 void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value) {
 	//check for normal fmi variables count and valid
 	if (name == "count") {
-		this->count = value;
+		//this->count = value;
 		return;
 	}
 	if (name == "valid") {

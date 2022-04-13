@@ -90,7 +90,7 @@ private:
 	/**
 	stores the field \"count\" from fmi
 	*/
-	int count;
+	//int count;
 	/**
 	* verbose logs
 	*/
