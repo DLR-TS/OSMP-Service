@@ -84,7 +84,6 @@ grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const C
 };
 
 grpc::Status GRPCInterface::DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) {
-std::cout << "dostep" << std::endl;
 	response->set_value(
 		osmpInterface.doStep(request->value()));
 	return grpc::Status::OK;

@@ -81,7 +81,7 @@ void OSMPInterface::setParameter(std::vector<std::pair<std::string, std::string>
 			}
 		}
 	}
-	std::cout << std::endl;//flush after all parameters
+	std::cout << std::flush;//flush after all parameters
 }
 
 std::string OSMPInterface::read(const std::string& name) {
@@ -397,7 +397,6 @@ int OSMPInterface::doStep(double stepSize) {
 			}
 		}
 	}
-	std::cout << "ReadFMI fields to local memory" << std::endl;
 	//read all FMI fields to local memory
 	readOutputPointerFromFMU();
 	return 0;
