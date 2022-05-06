@@ -4,15 +4,18 @@
 
 #ifndef GRPCINTERFACE_H
 #define GRPCINTERFACE_H
+
 #include <string>
+#include <filesystem>
 #include <fstream>
-#include "OSMPInterface.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server_context.h>
 #include <grpcpp/security/server_credentials.h>
+
+#include "OSMPInterface.h"
 
 #include "grpc_proto_files/simulation_interface/SimulationInterface.pb.h"
 #include "grpc_proto_files/simulation_interface/SimulationInterface.grpc.pb.h"
@@ -21,12 +24,16 @@
 
 class GRPCInterface: public CoSiMa::rpc::SimulationInterface::Service, public CoSiMa::rpc::OSMPSimulationInterface::Service
 {
-	std::shared_ptr<grpc::Server> server;
+
+private:
 	const std::string server_address;
 	const std::chrono::milliseconds transaction_timeout;
-	std::unique_ptr<std::thread> server_thread;
-	bool verbose;
+	const bool verbose;
+
 	std::string fmu_name = "OSMP-FMU.fmu";
+
+	std::shared_ptr<grpc::Server> server;
+	std::unique_ptr<std::thread> server_thread;
 
 	OSMPInterface osmpInterface;
 
