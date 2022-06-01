@@ -2,7 +2,7 @@
 
 Service for OSMP-FMUs to communicate via gRPC with CoSiMa.
 
-Server Address can be given as [::]:<port> via command line parameter.
+Server Address can be given as [::]:\<port\> via command line parameter.
 If no parameter is given default is: 0.0.0.0:51425
 
 Pass a "-d" as a parameter to enable debug prints.
@@ -13,7 +13,8 @@ In CoSiMa is a comment out test in test-OSMPInterface which uses the OSMP-Servic
 # docker build
 Create personal access token (PAT) in GitLab.
 Create .TOKEN file in project root.
-Paste PAT in file: <username>:<accesstoken>
+
+Paste PAT in file: \<username\>:\<accesstoken\>
 ```sh
  docker build -t setlevel:osmpservice .
 ```
