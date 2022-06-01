@@ -1,10 +1,19 @@
-FROM ubuntu
+FROM ubuntu AS cosima_builder
 MAINTAINER frank.baumgarten@dlr.de
 
-RUN mkdir setlevel
-WORKDIR /setlevel
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y cmake build-essential pip git && rm -rf /var/lib/apt/lists/*
+RUN pip install conan
+
+RUN mkdir osmpservice && mkdir osmpservice/build
+WORKDIR /osmpservice/build
+COPY . /osmpservice/
+
+RUN cmake .. -DBUILD_SHARED_LIBS=false -DCMAKE_BUILD_TYPE=Release
+RUN rm /osmpservice/.TOKEN
+RUN cmake --build . --target OSMPService -j 4
+
+FROM ubuntu
+COPY --from=cosima_builder /osmpservice/build/bin/OSMPService .
 RUN mkdir logs
-
-COPY * /setlevel/
-
-CMD ./CoSimulationManager SetLevelConfig.yml -d
+ENTRYPOINT ./OSMPService

@@ -10,6 +10,13 @@ Pass a "-d" as a parameter to enable debug prints.
 For test run copy the FMU from test to your build directory and start the OSMP-Service.
 In CoSiMa is a comment out test in test-OSMPInterface which uses the OSMP-Service.
 
+# docker build
+Create personal access token (PAT) in GitLab.
+Create .TOKEN file in project root.
+Paste PAT in file: <username>:<accesstoken>
+```sh
+ docker build -t setlevel:osmpservice .
+```
 # manual build
 in root folder:
 ```sh

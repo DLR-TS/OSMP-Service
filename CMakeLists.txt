@@ -1,9 +1,7 @@
-﻿# CMakeList.txt: CMake-Projektdatei der obersten Ebene.
-#
-cmake_minimum_required (VERSION 3.8)
-message("Running with CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
-
+﻿cmake_minimum_required (VERSION 3.8)
 project ("OSMPService" CXX)
+
+message("Running with CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
