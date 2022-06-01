@@ -4,7 +4,6 @@ protobuf/3.11.4
 #grpc/1.29.1@zcube/stable
 # requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.31.0/BUILDING.md#windows)
 nasm/2.15.05
-yaml-cpp/0.6.3
 catch2/2.12.1
 fakeit/2.0.7
 # fmi4cpp dependencies:

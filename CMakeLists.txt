@@ -41,7 +41,7 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 # get dependencies distributed as conan packages
-conan_cmake_run(CONANFILE conanfile.txt 
+conan_cmake_run(CONANFILE conanfile.txt
                 BASIC_SETUP CMAKE_TARGETS
                 BUILD missing)
 
@@ -93,8 +93,6 @@ add_library(OSMPServiceLib ${COSIMA_SOURCE} ${COSIMA_INCLUDES})
 # OSMPServiceLib exports no symbols, thereby preventing linking of its dll on windows. Force export of all global symbols
 set_property(TARGET OSMPServiceLib PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_include_directories(OSMPServiceLib PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-# link conan managed dependencies
-target_link_libraries(OSMPServiceLib PUBLIC CONAN_PKG::yaml-cpp)
 # FMI4cpp is not managed by conan, thus it is added here
 target_include_directories(OSMPServiceLib PUBLIC fmi4cpp)
 target_link_libraries(OSMPServiceLib PUBLIC fmi4cpp)
@@ -128,7 +126,7 @@ if(BUILD_SHARED_LIBS)
 else()
 	target_link_libraries(OSMPGRPCLib PUBLIC open_simulation_interface_static)
 endif()
-target_link_libraries(OSMPGRPCLib PUBLIC grpc++)
+target_link_libraries(OSMPGRPCLib PUBLIC grpc++ grpc++_reflection)
 target_include_directories(OSMPGRPCLib BEFORE PUBLIC ${CMAKE_BINARY_DIR}/gens )
 target_link_libraries(OSMPServiceLib PUBLIC OSMPGRPCLib)
 # previous include is supposed to propagate, but is missing...
@@ -147,12 +145,6 @@ target_link_libraries(test_OSMPService PRIVATE OSMPServiceLib Catch2::Catch2 OSM
 #add_custom_command(TARGET test_OSMPService PRE_BUILD
 #                     COMMAND ${CMAKE_COMMAND} -E
 #                         copy_if_different
-#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig1.yaml
-#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig2.yaml
-#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/testconfig3.yaml
-#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Feedthrough_cs.fmu
-#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Feedthrough_me.fmu
-#						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/Stair.fmu
 #						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPCNetworkProxy.fmu
 #						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySensor.fmu
 #						 ${CMAKE_CURRENT_LIST_DIR}/test/resources/OSMPDummySource.fmu

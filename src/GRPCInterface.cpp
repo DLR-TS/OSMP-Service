@@ -6,6 +6,7 @@ void GRPCInterface::startServer(const bool nonBlocking)
 		server->Shutdown(std::chrono::system_clock::now() + transaction_timeout);
 	}
 	grpc::ServerBuilder builder;
+	grpc::reflection::InitProtoReflectionServerBuilderPlugin();
 	builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
 	builder.RegisterService(static_cast<CoSiMa::rpc::SimulationInterface::Service*>(this));
 	builder.RegisterService(static_cast<CoSiMa::rpc::OSMPSimulationInterface::Service*>(this));
