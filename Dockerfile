@@ -15,5 +15,4 @@ RUN cmake --build . --target OSMPService -j 4
 
 FROM ubuntu
 COPY --from=osmp_builder /osmpservice/build/bin/OSMPService .
-RUN mkdir logs
 ENTRYPOINT ./OSMPService
