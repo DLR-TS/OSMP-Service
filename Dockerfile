@@ -1,4 +1,4 @@
-FROM ubuntu AS cosima_builder
+FROM ubuntu AS osmp_builder
 MAINTAINER frank.baumgarten@dlr.de
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -14,6 +14,6 @@ RUN rm /osmpservice/.TOKEN
 RUN cmake --build . --target OSMPService -j 4
 
 FROM ubuntu
-COPY --from=cosima_builder /osmpservice/build/bin/OSMPService .
+COPY --from=osmp_builder /osmpservice/build/bin/OSMPService .
 RUN mkdir logs
 ENTRYPOINT ./OSMPService
