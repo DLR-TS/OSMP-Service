@@ -54,7 +54,7 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	CoSiMa::rpc::SimulationInterface::Stub sensorSimStub(sensorChannel);
 	
 	CoSiMa::rpc::OSMPConfig config;
-	config.set_fmu_path(testResourceDirectory + "/OSMPDummySource.fmu");
+	config.set_fmupath(testResourceDirectory + "/OSMPDummySource.fmu");
 
 	CoSiMa::rpc::Int32 response;
 
@@ -63,7 +63,7 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	CHECK(status.ok());
 	CHECK(0 == response.value());
 
-	config.set_fmu_path(testResourceDirectory + "/OSMPDummySensor.fmu");
+	config.set_fmupath(testResourceDirectory + "/OSMPDummySensor.fmu");
 	response.Clear();
 
 	status = sensorOSMPStub.SetConfig(CreateDeadlinedClientContext(transactionTimeout).get(), config, &response);
