@@ -30,6 +30,8 @@ private:
 	const std::string server_address;
 	const std::chrono::milliseconds transaction_timeout;
 	const bool verbose;
+	const int divider;
+	int doStepCounter = 1;
 
 	std::string fmu_name = "OSMP-FMU.fmu";
 
@@ -39,7 +41,7 @@ private:
 	OSMPInterface osmpInterface;
 
 public:
-	GRPCInterface(std::string server_address, bool verbose) : server_address(server_address), verbose(verbose), transaction_timeout(std::chrono::milliseconds(5000)) {};
+	GRPCInterface(std::string server_address, bool verbose, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), transaction_timeout(std::chrono::milliseconds(5000)) {};
 	void startServer(const bool nonBlocking = false);
 	void stopServer();
 

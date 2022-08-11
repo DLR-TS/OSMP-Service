@@ -76,16 +76,26 @@ grpc::Status GRPCInterface::GetStringValue(grpc::ServerContext* context, const C
 	response->set_value(
 		osmpInterface.read(request->value()));
 	return grpc::Status::OK;
-};
+}
 
 grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
 	response->set_value(
 		osmpInterface.write(request->name(), request->value()));
 	return grpc::Status::OK;
-};
+}
 
 grpc::Status GRPCInterface::DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) {
-	response->set_value(
-		osmpInterface.doStep(request->value()));
-	return grpc::Status::OK;
-};
+	if (divider <= doStepCounter) {
+		doStepCounter = 1;
+		response->set_value(
+			osmpInterface.doStep(request->value()));
+		return grpc::Status::OK;
+	}
+	else {
+		doStepCounter++;
+		if (verbose) {
+			std::cout << "Skipped DoStep. Counter: " << doStepCounter << " Divider: " << divider << std::endl;
+		}
+		return grpc::Status::OK;
+	}
+}
