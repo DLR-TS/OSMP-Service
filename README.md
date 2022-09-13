@@ -1,8 +1,9 @@
 # OSMP Service
 
-Service for OSMP-FMUs to communicate via gRPC with CoSiMa.
+The OSMP Service can open a OSMP-FMU (https://github.com/OpenSimulationInterface/osi-sensor-model-packaging). The OSMP Service is addressed by the CoSiMa.
+A CoSiMa instance together with multiple OSMP Service instances creates a simulation.
 
-Server Address can be given as [::]:\<port\> via command line parameter.
+The OSMP Service act as a server. The address can be given as [::]:\<port\> via command line parameter.
 If no parameter is given default is: 0.0.0.0:51425
 
 Pass -v as a parameter to enable verbose output.
