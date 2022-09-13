@@ -81,7 +81,7 @@ void OSMPInterface::setParameter(std::vector<std::pair<std::string, std::string>
 			}
 		}
 	}
-	std::cout << std::flush;//flush after all parameters
+	std::cout << std::flush;
 }
 
 std::string OSMPInterface::read(const std::string& name) {
@@ -90,7 +90,6 @@ std::string OSMPInterface::read(const std::string& name) {
 		return "";
 	}
 	if (IN_INITIALIZATION_MODE == fmuState) {
-		//update pointers
 		if (verbose) {
 			std::cout << "Update output pointers, because of FMUState == Initialization\n";
 		}
@@ -108,13 +107,13 @@ std::string OSMPInterface::read(const std::string& name) {
 			return readFromHeap(address.second);
 		}
 	}
-	std::cout << "Could not find matching message: " << name << "\n";
+	std::cout << "Could not find matching message: " << name << std::endl;
 	return "";
 }
 
 int OSMPInterface::write(const std::string& name, const std::string& value) {
 	if (toFMUAddresses.size() == 0) {
-		std::cerr << "Write: No messages location to FMU for " << name << "defined" << "\n";
+		std::cerr << "Write: No messages location to FMU for " << name << "defined" << std::endl;
 		return -1;
 	}
 	if (verbose) {
@@ -241,7 +240,7 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 	}
 	std::cerr << "No match of wanted message: " << address.name << std::endl;
 	return "";
-};
+}
 
 int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 	if ((void*)address.addr.address != nullptr) {
@@ -332,7 +331,7 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		break;
 	}
 	return 0;
-};
+}
 
 int OSMPInterface::doStep(double stepSize) {
 	if (verbose) {
