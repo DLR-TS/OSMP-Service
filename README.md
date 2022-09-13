@@ -8,9 +8,6 @@ If no parameter is given default is: 0.0.0.0:51425
 
 Pass -v as a parameter to enable verbose output.
 
-For test run copy the FMU from test to your build directory and start the OSMP-Service.
-In CoSiMa is a comment out test in test-OSMPInterface which uses the OSMP-Service.
-
 # Installation Guide
 
 ## Docker build
