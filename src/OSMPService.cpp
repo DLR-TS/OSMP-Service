@@ -2,8 +2,8 @@
 
 int main(int argc, char *argv[])
 {
-	std::cout << "Welcome to OSMPClient.\n";
-	std::cout << "Current directory: " << std::filesystem::current_path() << "\n" << std::endl;
+	std::cout << "Welcome to OSMPClient.\nCurrent directory: " 
+		<< std::filesystem::current_path() << "\n" << std::endl;
 
 	//Server address deliberately chosen to accept any connection
 	std::string server_address = "0.0.0.0:51425";

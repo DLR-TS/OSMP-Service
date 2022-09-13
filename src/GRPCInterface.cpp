@@ -42,7 +42,7 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 	}
 	int i_response = osmpInterface.create(fmu_name);
 	i_response += osmpInterface.init(verbose);
-	response->set_value(i_response);
+	
 	//set parameters
 	std::vector<std::pair<std::string, std::string>> parameters{};
 	for (int i = 0; i < config->parameter_size(); i++) {
@@ -53,19 +53,27 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 		parameters.push_back(std::make_pair(parameter.name(), parameter.value()));
 	}
 	osmpInterface.setParameter(parameters);
-	std::cout << i_response << std::endl;
+
+	if (verbose) {
+		std::cout << i_response << std::endl;
+	}
+	response->set_value(i_response);
 	return grpc::Status::OK;
 }
 
 grpc::Status GRPCInterface::UploadFMU(grpc::ServerContext* context, const CoSiMa::rpc::FMU* request, ::CoSiMa::rpc::UploadStatus* response) {
 	if (verbose) {
-		std::cout << "Write FMU." << std::endl;
+		std::cout << "Start upload FMU." << std::endl;
 	}
 
 	std::ofstream binFile(fmu_name, std::ios::binary);
 	std::string fmu = request->binaryfmu();
 	binFile.write(fmu.c_str(), fmu.size());
 	binFile.close();
+
+	if (verbose) {
+		std::cout << "Done upload FMU." << std::endl;
+	}
 
 	response->set_code(CoSiMa::rpc::UploadStatusCode::Ok);
 

@@ -36,18 +36,18 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	*/
 	double transactionTimeout = 5.0;
 
-	std::string horstAddrSource = "localhost:51426";
-	std::string horstAddrSensor = "localhost:51427";
-	GRPCInterface sourceGRPCService(horstAddrSource, false);
-	GRPCInterface sensorGRPCService(horstAddrSensor, false);
+	std::string hostAddrSource = "localhost:51426";
+	std::string hostAddrSensor = "localhost:51427";
+	GRPCInterface sourceGRPCService(hostAddrSource, false);
+	GRPCInterface sensorGRPCService(hostAddrSensor, false);
 	sourceGRPCService.startServer(true);
 	sensorGRPCService.startServer(true);
 	grpc::ChannelArguments channelArgs;
 	// disable client message size limits
 	channelArgs.SetMaxSendMessageSize(-1);
 	channelArgs.SetMaxReceiveMessageSize(-1);
-	auto sourceChannel = grpc::CreateCustomChannel(horstAddrSource, grpc::InsecureChannelCredentials(), channelArgs);
-	auto sensorChannel = grpc::CreateCustomChannel(horstAddrSensor, grpc::InsecureChannelCredentials(), channelArgs);
+	auto sourceChannel = grpc::CreateCustomChannel(hostAddrSource, grpc::InsecureChannelCredentials(), channelArgs);
+	auto sensorChannel = grpc::CreateCustomChannel(hostAddrSensor, grpc::InsecureChannelCredentials(), channelArgs);
 	CoSiMa::rpc::OSMPSimulationInterface::Stub sourceOSMPStub(sourceChannel);
 	CoSiMa::rpc::SimulationInterface::Stub sourceSimStub(sourceChannel);
 	CoSiMa::rpc::OSMPSimulationInterface::Stub sensorOSMPStub(sensorChannel);
@@ -147,4 +147,3 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	sourceGRPCService.stopServer();
 	sensorGRPCService.stopServer();
 }
-

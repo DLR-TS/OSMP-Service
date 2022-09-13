@@ -47,4 +47,3 @@ TEST_CASE("OSMP Interface Test","[OSMPInterface]") {
 	CHECK(serializedSensorData.size() == sensorData.ByteSizeLong());
 
 }
-
