@@ -1,5 +1,5 @@
 [requires]
-protobuf/3.11.4
+protobuf/3.19.2
 # not yet published... Installing from the projects github using CMake FetchContent Module instead
 #grpc/1.29.1@zcube/stable
 # requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.31.0/BUILDING.md#windows)
@@ -7,7 +7,7 @@ nasm/2.15.05
 catch2/2.12.1
 fakeit/2.0.7
 # fmi4cpp dependencies:
-boost/1.77.0
+boost/1.69.0
 libzip/1.8.0
 bzip2/1.0.8
 

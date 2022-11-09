@@ -10,7 +10,6 @@ WORKDIR /osmpservice/build
 COPY . /osmpservice/
 
 RUN cmake .. -DBUILD_SHARED_LIBS=false -DCMAKE_BUILD_TYPE=Release
-RUN rm /osmpservice/.TOKEN
 RUN cmake --build . --target OSMPService -j 4
 
 FROM ubuntu

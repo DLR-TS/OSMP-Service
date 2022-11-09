@@ -207,36 +207,6 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 		}
 		return trafficUpdate.SerializeAsString();
 		break;
-	case SL45DynamicsRequestMessage:
-		if (!dynamicsRequest.ParseFromArray((const void*)address.addr.address, address.size)) {
-			std::cerr << "DynamicsRequest: Parse from pointer unsuccessful" << std::endl;
-			return "";
-		}
-		if (verbose) {
-			std::cout << dynamicsRequest.DebugString() << std::endl;
-		}
-		return dynamicsRequest.SerializeAsString();
-		break;
-	case SL45MotionCommandMessage:
-		if (!motionCommand.ParseFromArray((const void*)address.addr.address, address.size)) {
-			std::cerr << "MotionCommand: Parse from pointer unsuccessful" << std::endl;
-			return "";
-		}
-		if (verbose) {
-			std::cout << motionCommand.DebugString() << std::endl;
-		}
-		return motionCommand.SerializeAsString();
-		break;
-	case SL45VehicleCommunicationDataMessage:
-		if (!vehicleCommunicationData.ParseFromArray((const void*)address.addr.address, address.size)) {
-			std::cerr << "VehicleCommunicationData: Parse from pointer unsuccessful" << std::endl;
-			return "";
-		}
-		if (verbose) {
-			std::cout << vehicleCommunicationData.DebugString() << std::endl;
-		}
-		return vehicleCommunicationData.SerializeAsString();
-		break;
 	}
 	std::cerr << "No match of wanted message: " << address.name << std::endl;
 	return "";
@@ -301,33 +271,6 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 			std::cout << trafficUpdate.DebugString() << std::endl;
 		}
 		trafficUpdate.SerializeToArray((void*)address.addr.address, address.size);
-		break;
-	case SL45DynamicsRequestMessage:
-		dynamicsRequest.ParseFromString(value);
-		address.size = (int)dynamicsRequest.ByteSizeLong();
-		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose && value.size()) {
-			std::cout << dynamicsRequest.DebugString() << std::endl;
-		}
-		dynamicsRequest.SerializeToArray((void*)address.addr.address, address.size);
-		break;
-	case SL45MotionCommandMessage:
-		motionCommand.ParseFromString(value);
-		address.size = (int)motionCommand.ByteSizeLong();
-		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose && value.size()) {
-			std::cout << motionCommand.DebugString() << std::endl;
-		}
-		motionCommand.SerializeToArray((void*)address.addr.address, address.size);
-		break;
-	case SL45VehicleCommunicationDataMessage:
-		vehicleCommunicationData.ParseFromString(value);
-		address.size = (int)vehicleCommunicationData.ByteSizeLong();
-		address.addr.address = (unsigned long long)malloc(address.size);
-		if (verbose && value.size()) {
-			std::cout << vehicleCommunicationData.DebugString() << std::endl;
-		}
-		vehicleCommunicationData.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	}
 	return 0;
@@ -561,9 +504,6 @@ eOSIMessage OSMPInterface::getMessageType(const std::string& messageType) {
 	else if (messageType.find("GroundTruth") != std::string::npos) { return GroundTruthMessage; }
 	else if (messageType.find("TrafficCommand") != std::string::npos) { return TrafficCommandMessage; }
 	else if (messageType.find("TrafficUpdate") != std::string::npos) { return TrafficUpdateMessage; }
-	else if (messageType.find("DynamicsRequest") != std::string::npos) { return SL45DynamicsRequestMessage; }
-	else if (messageType.find("MotionCommand") != std::string::npos) { return SL45MotionCommandMessage; }
-	else if (messageType.find("VehicleCommunicationData") != std::string::npos) { return SL45VehicleCommunicationDataMessage; }
 	else {
 		std::cout << "Error: Can not find message " << messageType << std::endl;
 		throw 5372;

@@ -12,9 +12,6 @@
 #include "osi_groundtruth.pb.h"
 #include "osi_trafficcommand.pb.h"
 #include "osi_trafficupdate.pb.h"
-#include "sl45_dynamicsrequest.pb.h"
-#include "sl45_motioncommand.pb.h"
-#include "sl45_vehiclecommunicationdata.pb.h"
 
 /**
 * Implemented OSI Messages
@@ -27,9 +24,6 @@ enum eOSIMessage {
 	GroundTruthMessage,
 	TrafficCommandMessage,
 	TrafficUpdateMessage,
-	SL45DynamicsRequestMessage,
-	SL45MotionCommandMessage,
-	SL45VehicleCommunicationDataMessage
 };
 
 /**

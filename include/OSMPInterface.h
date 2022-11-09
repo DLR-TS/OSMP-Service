@@ -79,9 +79,6 @@ private:
 	osi3::GroundTruth groundTruth;
 	osi3::TrafficCommand trafficCommand;
 	osi3::TrafficUpdate trafficUpdate;
-	setlevel4to5::DynamicsRequest dynamicsRequest;
-	setlevel4to5::MotionCommand motionCommand;
-	setlevel4to5::VehicleCommunicationData vehicleCommunicationData;
 
 	/**
 	stores the field \"valid\" from fmi
