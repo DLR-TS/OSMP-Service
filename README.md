@@ -1,6 +1,6 @@
 # OSMP Service
 
-The OSMP Service can open a OSMP-FMU (https://github.com/OpenSimulationInterface/osi-sensor-model-packaging). The OSMP Service is addressed by the [CoSiMa](https://github.com/DLR-TS/CoSiMa).
+The OSMP Service can open a [OSMP](https://github.com/OpenSimulationInterface/osi-sensor-model-packaging)-FMU. The OSMP Service is addressed by the [CoSiMa](https://github.com/DLR-TS/CoSiMa).
 A CoSiMa instance together with multiple OSMP Service instances creates a simulation.
 
 The OSMP Service act as a server. The address can be given as [::]:\<port\> via command line parameter.
@@ -28,7 +28,7 @@ in root folder:
 ## Windows with MSVC 2017
 Open the folder in Visual Studio and use the cmake integration.
 
-#Contacts
+# Contacts
 
 bjoern.bahn@dlr.de danny.behnecke@dlr.de
 
