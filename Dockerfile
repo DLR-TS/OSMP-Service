@@ -13,5 +13,6 @@ RUN cmake .. -DBUILD_SHARED_LIBS=false -DCMAKE_BUILD_TYPE=Release
 RUN cmake --build . --target OSMPService -j 4
 
 FROM ubuntu
+RUN apt-get update && apt-get install -y libprotobuf23 && rm -rf /var/lib/apt/lists/*
 COPY --from=osmp_builder /osmpservice/build/bin/OSMPService .
 ENTRYPOINT ./OSMPService
