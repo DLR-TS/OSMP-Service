@@ -1,6 +1,6 @@
 # OSMP Service
 
-The OSMP Service can open a OSMP-FMU (https://github.com/OpenSimulationInterface/osi-sensor-model-packaging). The OSMP Service is addressed by the CoSiMa.
+The OSMP Service can open a OSMP-FMU (https://github.com/OpenSimulationInterface/osi-sensor-model-packaging). The OSMP Service is addressed by the [CoSiMa](https://github.com/DLR-TS/CoSiMa).
 A CoSiMa instance together with multiple OSMP Service instances creates a simulation.
 
 The OSMP Service act as a server. The address can be given as [::]:\<port\> via command line parameter.
@@ -11,14 +11,13 @@ Pass -v as a parameter to enable verbose output.
 # Installation Guide
 
 ## Docker build
-Create personal access token (PAT) for gitlab.setlevel.de.
-Create .TOKEN file in project root.
 
-Paste PAT in file: \<username\>:\<accesstoken\>
 ```sh
- docker build -t setlevel:osmpservice .
+ docker build -t ostar:osmpservice .
 ```
+
 ## Manual build
+
 in root folder:
 ```sh
  mkdir build && cd build
@@ -28,3 +27,9 @@ in root folder:
 
 ## Windows with MSVC 2017
 Open the folder in Visual Studio and use the cmake integration.
+
+#Contacts
+
+bjoern.bahn@dlr.de danny.behnecke@dlr.de
+
+This software was originally developed as part of SetLevel.
