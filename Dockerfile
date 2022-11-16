@@ -1,4 +1,4 @@
-FROM ubuntu AS osmp_builder
+FROM ubuntu:20.04 AS osmp_builder
 MAINTAINER frank.baumgarten@dlr.de
 
 ENV DEBIAN_FRONTEND=noninteractive
