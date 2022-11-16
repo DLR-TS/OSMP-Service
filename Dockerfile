@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS osmp_builder
+FROM ubuntu:22.04 AS osmp_builder
 MAINTAINER frank.baumgarten@dlr.de
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,7 +12,7 @@ COPY . /osmpservice/
 RUN cmake .. -DBUILD_SHARED_LIBS=false -DCMAKE_BUILD_TYPE=Release
 RUN cmake --build . --target OSMPService -j 4
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y libprotobuf23 && rm -rf /var/lib/apt/lists/*
 COPY --from=osmp_builder /osmpservice/build/bin/OSMPService .
 ENTRYPOINT ./OSMPService
