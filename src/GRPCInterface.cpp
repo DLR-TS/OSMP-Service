@@ -40,8 +40,8 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 			std::cout << "Path to FMU received instead of FMU itself: " << fmu_name << std::endl;
 		}
 	}
-	int i_response = osmpInterface.create(fmu_name);
-	i_response += osmpInterface.init(verbose);
+	int responsevalue = osmpInterface.create(fmu_name);
+	responsevalue += osmpInterface.init(verbose);
 	
 	//set parameters
 	std::vector<std::pair<std::string, std::string>> parameters{};
@@ -55,15 +55,15 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 	osmpInterface.setParameter(parameters);
 
 	if (verbose) {
-		std::cout << i_response << std::endl;
+		std::cout << responsevalue << std::endl;
 	}
-	response->set_value(i_response);
+	response->set_value(responsevalue);
 	return grpc::Status::OK;
 }
 
 grpc::Status GRPCInterface::UploadFMU(grpc::ServerContext* context, const CoSiMa::rpc::FMU* request, ::CoSiMa::rpc::UploadStatus* response) {
 	if (verbose) {
-		std::cout << "Start upload FMU." << std::endl;
+		std::cout << "Upload FMU: Start" << std::endl;
 	}
 
 	std::ofstream binFile(fmu_name, std::ios::binary);
@@ -72,11 +72,10 @@ grpc::Status GRPCInterface::UploadFMU(grpc::ServerContext* context, const CoSiMa
 	binFile.close();
 
 	if (verbose) {
-		std::cout << "Done upload FMU." << std::endl;
+		std::cout << "Upload FMU: Done" << std::endl;
 	}
 
 	response->set_code(CoSiMa::rpc::UploadStatusCode::Ok);
-
 	return grpc::Status::OK;
 }
 
@@ -93,10 +92,10 @@ grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const C
 }
 
 grpc::Status GRPCInterface::DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) {
+	//divider default value: 1 
 	if (divider <= doStepCounter) {
 		doStepCounter = 1;
-		response->set_value(
-			osmpInterface.doStep(request->value()));
+		response->set_value(osmpInterface.doStep(request->value()));
 		return grpc::Status::OK;
 	}
 	else {

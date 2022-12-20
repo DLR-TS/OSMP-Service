@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 1; i < argc; i++) {
 		const std::string parameter = std::string(argv[i]);
-		if (parameter == "-d" || parameter == "-v") {
+		if (parameter == "-v") {
 			verbose = true;
 			std::cout << "Verbose messages enabled." << std::endl;
 		}

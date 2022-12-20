@@ -8,7 +8,7 @@ int OSMPInterface::create(const std::string& path) {
 	std::unique_ptr<fmi4cpp::fmi2::fmu> fmu = std::make_unique<fmi4cpp::fmi2::fmu>(abs.string());
 	if (!fmu->supports_cs()) {
 		std::cout << "FMU contains no cs model" << std::endl;
-		return 216373;
+		return -1;
 	}
 
 	// load co-simulation description from FMU
@@ -39,7 +39,6 @@ int OSMPInterface::init(bool verbose, float starttime) {
 	//iterate over unknowns declared as fmu inputs or outputs and create AddressMap
 	for (auto const& var : *(model_description->model_variables)) {
 		if (var.is_integer()) {
-			// possible inputs of develop following version sl45/v1.0.1:
 			// OSMPSensorViewIn, OSMPSensorDataIn, OSMPTrafficCommandIn of causality "input"
 			// OSMPSensorViewInConfig, OSMPGroundTruthInit of causality "parameter"
 			if (var.causality == fmi4cpp::fmi2::causality::input || fmi4cpp::fmi2::causality::parameter == var.causality) {
@@ -473,7 +472,6 @@ void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap,
 		}
 	}
 }
-
 
 inline OSMPInterface::OSMPFMUSlaveStateWrapper::OSMPFMUSlaveStateWrapper(std::shared_ptr<fmi4cpp::fmi2::cs_slave> slave) {
 	slave->get_fmu_state(state);
