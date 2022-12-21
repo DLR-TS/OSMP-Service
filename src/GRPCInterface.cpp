@@ -40,23 +40,14 @@ grpc::Status GRPCInterface::SetConfig(grpc::ServerContext* context, const CoSiMa
 			std::cout << "Path to FMU received instead of FMU itself: " << fmu_name << std::endl;
 		}
 	}
-	int responsevalue = osmpInterface.create(fmu_name);
-	responsevalue += osmpInterface.init(verbose);
 	
-	//set parameters
-	std::vector<std::pair<std::string, std::string>> parameters{};
-	for (int i = 0; i < config->parameter_size(); i++) {
-		const auto& parameter = config->parameter(i);
-		if (verbose) {
-			std::cout << parameter.name() << parameter.value() << std::endl;
-		}
-		parameters.push_back(std::make_pair(parameter.name(), parameter.value()));
+	int responsevalue = osmpInterface.create(fmu_name);
+	osmpInterface.init(verbose);
+	for (auto& initialparameter : config->parameter()) {
+		osmpInterface.setInitialParameter(initialparameter.name(), initialparameter.value());
 	}
-	osmpInterface.setParameter(parameters);
+	osmpInterface.finishInitialization();
 
-	if (verbose) {
-		std::cout << responsevalue << std::endl;
-	}
 	response->set_value(responsevalue);
 	return grpc::Status::OK;
 }
@@ -81,13 +72,13 @@ grpc::Status GRPCInterface::UploadFMU(grpc::ServerContext* context, const CoSiMa
 
 grpc::Status GRPCInterface::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
 	response->set_value(
-		osmpInterface.read(request->value()));
+		osmpInterface.readOSIMessage(request->value()));
 	return grpc::Status::OK;
 }
 
 grpc::Status GRPCInterface::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
 	response->set_value(
-		osmpInterface.write(request->name(), request->value()));
+		osmpInterface.writeOSIMessage(request->name(), request->value()));
 	return grpc::Status::OK;
 }
 

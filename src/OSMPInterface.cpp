@@ -16,14 +16,15 @@ int OSMPInterface::create(const std::string& path) {
 	if (verbose) {
 		std::cout << "Try parsing model description" << std::endl;
 	}
-	auto modelDescription = coSimFMU->get_model_description();
+	modelDescription = coSimFMU->get_model_description();
+	
 	if (verbose) {
 		std::cout << "Parsed model description successfully" << std::endl;
 	}
 	return 0;
 }
 
-int OSMPInterface::init(bool verbose, float starttime) {
+void OSMPInterface::init(bool verbose, float starttime) {
 	this->verbose = verbose;
 	//Instance name cannot be set with FMU4cpp. The model identifier is used automatically instead
 	coSimSlave = coSimFMU->new_instance();
@@ -33,71 +34,73 @@ int OSMPInterface::init(bool verbose, float starttime) {
 
 	coSimSlave->setup_experiment((fmi2Real)starttime);
 	coSimSlave->enter_initialization_mode();
-	fmuState = IN_INITIALIZATION_MODE;
 
-	auto const model_description = coSimFMU->get_model_description();
 	//iterate over unknowns declared as fmu inputs or outputs and create AddressMap
-	for (auto const& var : *(model_description->model_variables)) {
-		if (var.is_integer()) {
-			// OSMPSensorViewIn, OSMPSensorDataIn, OSMPTrafficCommandIn of causality "input"
-			// OSMPSensorViewInConfig, OSMPGroundTruthInit of causality "parameter"
-			if (var.causality == fmi4cpp::fmi2::causality::input || fmi4cpp::fmi2::causality::parameter == var.causality) {
-				fmi2Integer integer;
-				if (verbose) {
-					std::cout << "In Ref: " << var.value_reference << " " << var.name << std::endl;
-				}
-				saveToAddressMap(toFMUAddresses, var.name, 0);
+	for (auto const& var : *(modelDescription->model_variables)) {
+		// OSMPSensorViewIn, OSMPSensorDataIn, OSMPTrafficCommandIn of causality "input"
+		// OSMPSensorViewInConfig, OSMPGroundTruthInit of causality "parameter"
+		if (var.is_integer() && var.causality == fmi4cpp::fmi2::causality::input || var.causality == fmi4cpp::fmi2::causality::parameter) {
+			if (verbose) {
+				std::cout << "In Ref: " << var.value_reference << " " << var.name << "\n";
 			}
-			else if (fmi4cpp::fmi2::causality::output == var.causality || fmi4cpp::fmi2::causality::calculatedParameter == var.causality) {
-				fmi2Integer integer;
-				if (verbose) {
-					std::cout << "Out Ref: " << var.value_reference << " " << var.name << std::endl;
-				}
-				coSimSlave->read_integer(var.value_reference, integer);
-				saveToAddressMap(fromFMUAddresses, var.name, integer);
-			}
+			saveToAddressMap(toFMUAddresses, var.name, 0);
 		}
+		else if (var.is_integer() && var.causality == fmi4cpp::fmi2::causality::output || var.causality == fmi4cpp::fmi2::causality::calculatedParameter) {
+			if (verbose) {
+				std::cout << "Out Ref: " << var.value_reference << " " << var.name << "\n";
+			}
+			fmi2Integer integer;
+			coSimSlave->read_integer(var.value_reference, integer);
+			saveToAddressMap(fromFMUAddresses, var.name, integer);
+		}				
 	}
-	return 0;
+	if (toFMUAddresses.size() == 0) {
+		std::cout << "Write: No messages to FMU defined." << "\n";
+	}
+	if (fromFMUAddresses.size() == 0) {
+		std::cout << "Read: No messages from FMU defined." << "\n";
+	}
+	std::cout << std::flush;
 }
 
-void OSMPInterface::setParameter(std::vector<std::pair<std::string, std::string>>& parameters) {
-
-	if (parameters.size() == 0) {
-		return;
-	}
-
-	auto const model_description = coSimSlave->get_model_description();
-	//iterate over unknowns declared as fmu inputs or outputs and create AddressMap
-	for (auto const& var : *(model_description->model_variables)) {
-		if (var.is_string() & var.causality == fmi4cpp::fmi2::causality::parameter) {
-
-			for (auto& parameter : parameters) {
-				if (parameter.first == var.name) {
-					coSimSlave->write_string(var.value_reference, parameter.second.c_str());
-					std::cout << "Set Parameter: " << parameter.first << " Value: " << parameter.second << "\n";
-				}
-			}
+void OSMPInterface::setInitialParameter(const std::string& name, const std::string& value) {
+	for (auto const& var : *(modelDescription->model_variables)) {
+		if (var.causality == fmi4cpp::fmi2::causality::parameter && var.name != name) {
+			continue;
+		}
+		if (var.is_boolean()) {
+			coSimSlave->write_boolean(var.value_reference, std::stoi(value));
+		}
+		else if (var.is_integer()) {
+			coSimSlave->write_integer(var.value_reference, std::stoi(value));
+		}
+		else if (var.is_real()) {
+			coSimSlave->write_real(var.value_reference, std::stod(value));
+		}
+		else if (var.is_string()){
+			coSimSlave->write_string(var.value_reference, value.c_str());
+		}
+		else {
+			std::cout << "Error: Set intial parameter not possible: " << name << " value: " << value  <<
+				"\nPossible entries: " << modelDescription->model_variables << "\n";
 		}
 	}
 	std::cout << std::flush;
 }
 
-std::string OSMPInterface::read(const std::string& name) {
-	if (fromFMUAddresses.size() == 0) {
-		std::cerr << "Read: No messages location to FMU for " << name << "defined" << "\n";
-		return "";
+void OSMPInterface::finishInitialization() {
+	if (verbose) {
+		std::cout << "Try to exit initialization mode\n";
 	}
-	if (IN_INITIALIZATION_MODE == fmuState) {
-		if (verbose) {
-			std::cout << "Update output pointers, because of FMUState == Initialization\n";
-		}
-		readOutputPointerFromFMU();
+	coSimSlave->exit_initialization_mode();
+}
+
+std::string OSMPInterface::readOSIMessage(const std::string& name) {
+	if (verbose) {
+		std::cout << "Read " << name << std::endl;
 	}
 	//read message from FMU
-	if (verbose) {
-		std::cout << "Amount of Addresses: " << fromFMUAddresses.size() << "\n";
-	}
+
 	for (auto& address : fromFMUAddresses) {
 		if (verbose) {
 			std::cout << "Found FMU Address: " << address.first << "\n";
@@ -110,22 +113,15 @@ std::string OSMPInterface::read(const std::string& name) {
 	return "";
 }
 
-int OSMPInterface::write(const std::string& name, const std::string& value) {
-	if (toFMUAddresses.size() == 0) {
-		std::cerr << "Write: No messages location to FMU for " << name << "defined" << std::endl;
-		return -1;
-	}
+int OSMPInterface::writeOSIMessage(const std::string& name, const std::string& value) {
 	if (verbose) {
 		std::cout << "Write " << name << " Length: " << value.size() << std::endl;
 	}
 	//write message to FMU
 	for (auto& address : toFMUAddresses) {
 		if (matchingNames(name, address.first)) {
-			int result = writeToHeap(address.second, value);
-			if (IN_INITIALIZATION_MODE == fmuState) {
-				writeInputPointerToFMU();
-			}
-			return result;
+			writeToHeap(address.second, value);
+			return 0;
 		}
 	}
 	if (verbose) {
@@ -211,7 +207,7 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 	return "";
 }
 
-int OSMPInterface::writeToHeap(address& address, const std::string& value) {
+void OSMPInterface::writeToHeap(address& address, const std::string& value) {
 	if ((void*)address.addr.address != nullptr) {
 		//free the allocated storage of previous osimessage
 		free((void*)address.addr.address);
@@ -272,34 +268,17 @@ int OSMPInterface::writeToHeap(address& address, const std::string& value) {
 		trafficUpdate.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	}
-	return 0;
 }
 
 int OSMPInterface::doStep(double stepSize) {
 	if (verbose) {
-		std::cout << "dostep method with stepsize " << stepSize << std::endl;
+		std::cout << "Dostep with stepsize " << stepSize << "\n";
 	}
-	if (IN_INITIALIZATION_MODE == fmuState) {
-		if (verbose) {
-			std::cout << "Try to exit initialization mode\n";
-		}
-		coSimSlave->exit_initialization_mode();
-		fmuState = INITIALIZED;
-	}
-	if (INITIALIZED != fmuState) {
-		if (verbose) {
-			std::cerr << "cannot use an uninitialized fmu" << std::endl;
-		}
-		return (int)std::errc::operation_not_permitted;
-	}
+
 	writeInputPointerToFMU();
 
 	//Possible rollback if step can not be done
 	auto preStepState = OSMPFMUSlaveStateWrapper::tryGetStateOf(coSimSlave);
-
-	if (verbose) {
-		std::cout << "call step method of FMU with size: " << stepSize << "\n";
-	}
 
 	if (!coSimSlave->step(stepSize)) {
 		if (verbose) {
@@ -340,15 +319,15 @@ int OSMPInterface::doStep(double stepSize) {
 	}
 	//read all FMI fields to local memory
 	readOutputPointerFromFMU();
+	std::cout << std::flush;
 	return 0;
 }
 
 int OSMPInterface::readOutputPointerFromFMU() {
-	auto const model_description = coSimFMU->get_model_description();
 	//iterate over unknowns declared as output
-	for (auto const& unknown : model_description->model_structure->outputs) {
+	for (const auto& unknown : modelDescription->model_structure->outputs) {
 		// use index to translate unknown into scalar_variable. FMU ScalarVariable index begins at 1
-		auto const& outputVar = (*model_description->model_variables.get())[unknown.index - 1];
+		const auto& outputVar = (*modelDescription->model_variables.get())[unknown.index - 1];
 		if (outputVar.is_integer()) {
 			fmi2Integer integer;
 			coSimSlave->read_integer(outputVar.value_reference, integer);
@@ -357,61 +336,55 @@ int OSMPInterface::readOutputPointerFromFMU() {
 	}
 	if (!valid) {
 		std::cout << "OSMP config not valid" << std::endl;
-		return 1;
+		return -1;
 	}
 	return 0;
 }
 
-int OSMPInterface::writeInputPointerToFMU() {
-	auto const model_description = coSimFMU->get_model_description();
+void OSMPInterface::writeInputPointerToFMU() {
 	//set pointers of messages in fmi
-	for (auto const& inputVar : *(model_description->model_variables)) {
-		if (inputVar.causality == fmi4cpp::fmi2::causality::input && inputVar.is_integer()) {
-			for (auto address : toFMUAddresses) {
-				if (inputVar.name.find(address.first) != std::string::npos) {
-					if (inputVar.name.find(".hi") != std::string::npos) {
-						coSimSlave->write_integer(inputVar.value_reference, address.second.addr.base.hi);
-					}
-					else if (inputVar.name.find(".lo") != std::string::npos) {
-						coSimSlave->write_integer(inputVar.value_reference, address.second.addr.base.lo);
-					}
-					else if (inputVar.name.find(".size") != std::string::npos) {
-						coSimSlave->write_integer(inputVar.value_reference, address.second.size);
-					}
-				}
+	for (const auto& inputVar : *(modelDescription->model_variables)) {
+		if (inputVar.causality != fmi4cpp::fmi2::causality::input || !inputVar.is_integer()) {
+			continue;
+		}
+		for (auto address : toFMUAddresses) {
+			if (inputVar.name.find(address.first) == std::string::npos) {
+				continue;
+			}
+			if (inputVar.name.find(".hi") != std::string::npos) {
+				coSimSlave->write_integer(inputVar.value_reference, address.second.addr.base.hi);
+			}
+			else if (inputVar.name.find(".lo") != std::string::npos) {
+				coSimSlave->write_integer(inputVar.value_reference, address.second.addr.base.lo);
+			}
+			else if (inputVar.name.find(".size") != std::string::npos) {
+				coSimSlave->write_integer(inputVar.value_reference, address.second.size);
 			}
 		}
 	}
-	return 0;
-}
-
-int OSMPInterface::close() {
-	return 0;
 }
 
 bool OSMPInterface::matchingNames(const std::string& name1, const std::string& name2) {
 	std::size_t openbracketposname1 = name1.find("[");
 	//no index:
 	if (openbracketposname1 == std::string::npos) {
-		if (name2 == name1 || name2 == name1 + "In" || name2 == name1 + "Out"
-			|| name1 == name2 + "In" || name1 == name2 + "Out"
-			)
+		if (name1 == name2 || name1 == name2 + "In" || name1 == name2 + "Out"
+			|| name2 == name1 + "In" || name2 == name1 + "Out")
 			return true;
 	}
 	else {
 		//with index
-		std::string name1WithoutIndex = name1.substr(0, openbracketposname1);
+		std::string_view name1WithoutIndex = name1.substr(0, openbracketposname1);
 		std::size_t openbracketposname2 = name2.find("[");
-		std::string name2WithoutIndex = name2.substr(0, openbracketposname1);
+		std::string_view name2WithoutIndex = name2.substr(0, openbracketposname1);
 
 		if (name2WithoutIndex.find(name1WithoutIndex) != std::string::npos
-			|| name1WithoutIndex.find(name2WithoutIndex) != std::string::npos
-			) {
+			|| name1WithoutIndex.find(name2WithoutIndex) != std::string::npos) {
 			//matching names
 			std::size_t closebracketposname1 = name1.find("]");
 			std::size_t closebracketposname2 = name2.find("]");
-			int name1_index = std::stoi(name1.substr(openbracketposname1 + 1, closebracketposname1 - 1));
-			int name2_index = std::stoi(name2.substr(openbracketposname2 + 1, closebracketposname2 - 1));
+			std::string_view name1_index = name1.substr(openbracketposname1 + 1, closebracketposname1 - 1);
+			std::string_view name2_index = name2.substr(openbracketposname2 + 1, closebracketposname2 - 1);
 			if (name1_index == name2_index) {
 				//matching index
 				return true;
@@ -432,6 +405,7 @@ void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap,
 		return;
 	}
 
+	//compare return 0 -> equals
 	if (0 == name.compare(name.length() - 8, 8, ".base.hi")) {
 		std::string prefixWithIndex = name.substr(0, name.length() - 8);
 
@@ -439,7 +413,7 @@ void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap,
 			address a;
 			a.addr.base.hi = value;
 			a.name = prefixWithIndex;
-			addressMap.insert({ prefixWithIndex , a });
+			addressMap.insert({ prefixWithIndex, a });
 		}
 		else {
 			addressMap.at(prefixWithIndex).addr.base.hi = value;
@@ -452,7 +426,7 @@ void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap,
 			address a;
 			a.addr.base.lo = value;
 			a.name = prefixWithIndex;
-			addressMap.insert({ prefixWithIndex , a });
+			addressMap.insert({ prefixWithIndex, a });
 		}
 		else {
 			addressMap.at(prefixWithIndex).addr.base.lo = value;
@@ -465,7 +439,7 @@ void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap,
 			address a;
 			a.size = value;
 			a.name = prefixWithIndex;
-			addressMap.insert({ prefixWithIndex , a });
+			addressMap.insert({ prefixWithIndex, a });
 		}
 		else {
 			addressMap.at(prefixWithIndex).size = value;
@@ -504,6 +478,6 @@ eOSIMessage OSMPInterface::getMessageType(const std::string& messageType) {
 	else if (messageType.find("TrafficUpdate") != std::string::npos) { return TrafficUpdateMessage; }
 	else {
 		std::cout << "Error: Can not find message " << messageType << std::endl;
-		throw 5372;
+		throw -1;
 	}
 }

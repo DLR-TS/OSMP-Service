@@ -11,6 +11,7 @@ service OSMPSimulationInterface {
 message OSMPConfig {
 	string fmupath = 1;
 	repeated NamedString parameter = 2;
+	repeated NamedString initialvalue = 3;
 }
 
 message FMU{

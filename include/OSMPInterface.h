@@ -18,19 +18,14 @@ class OSMPInterface
 {
 public:
 	int create(const std::string& path);
-	int init(bool verbose, float starttime = 0);
-	std::string read(const std::string& name);
-	int doStep(double stepSize = 1);
-	void setParameter(std::vector<std::pair<std::string, std::string>>&);
-	int write(const std::string& name,const std::string& value);
-	int close();
+	void init(bool verbose, float starttime = 0);
+	void setInitialParameter(const std::string& name, const std::string& value);
+	void finishInitialization();
 
-	enum FMUState {
-		UNINITIALIZED = 0,
-		IN_INITIALIZATION_MODE = 1,//can perform algebraic loops for initialization
-		INITIALIZED=2,//ready for use, can perform steps etc.
-		TERMINATED=8// fmu was shutdown/destroyed/whatever
-	};
+	int writeOSIMessage(const std::string& name,const std::string& value);
+	std::string readOSIMessage(const std::string& name);
+
+	int doStep(double stepSize = 1);
 
 protected:
 	class OSMPFMUSlaveStateWrapper {
@@ -51,7 +46,7 @@ private:
 	//fmi4cpp::fmi4cppFMUstate state;
 	std::unique_ptr<fmi4cpp::fmi2::cs_fmu> coSimFMU;
 	std::shared_ptr<fmi4cpp::fmi2::cs_slave> coSimSlave;
-	FMUState fmuState = UNINITIALIZED;
+	std::shared_ptr<const fmi4cpp::fmi2::cs_model_description> modelDescription;
 
 	/**
 	Temporary storage for osmp messages (name, size, address)
@@ -66,10 +61,10 @@ private:
 	void saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value);
 
 	int readOutputPointerFromFMU();
-	int writeInputPointerToFMU();
+	void writeInputPointerToFMU();
 	bool matchingNames(const std::string& name1, const std::string& name2);
 	std::string readFromHeap(const address& address);
-	int writeToHeap(address& address, const std::string& value);
+	void writeToHeap(address& address, const std::string& value);
 
 	eOSIMessage getMessageType(const std::string& messageType);
 
