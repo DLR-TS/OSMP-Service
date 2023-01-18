@@ -55,10 +55,10 @@ void OSMPInterface::init(bool verbose, float starttime) {
 		}				
 	}
 	if (toFMUAddresses.size() == 0) {
-		std::cout << "Write: No messages to FMU defined." << "\n";
+		std::cout << "Write: No messages to FMU defined.\n";
 	}
 	if (fromFMUAddresses.size() == 0) {
-		std::cout << "Read: No messages from FMU defined." << "\n";
+		std::cout << "Read: No messages from FMU defined.\n";
 	}
 	std::cout << std::flush;
 }
