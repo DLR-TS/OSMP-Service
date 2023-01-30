@@ -64,25 +64,35 @@ void OSMPInterface::init(bool verbose, float starttime) {
 }
 
 void OSMPInterface::setInitialParameter(const std::string& name, const std::string& value) {
+	if (verbose) {
+		std::cout << "Set intial parameter: " << name << " to " << value << std::endl;
+	}
 	for (auto const& var : *(modelDescription->model_variables)) {
 		if (var.causality == fmi4cpp::fmi2::causality::parameter && var.name != name) {
 			continue;
 		}
 		if (var.is_boolean()) {
 			coSimSlave->write_boolean(var.value_reference, std::stoi(value));
+			return;
 		}
 		else if (var.is_integer()) {
 			coSimSlave->write_integer(var.value_reference, std::stoi(value));
+			return;
 		}
 		else if (var.is_real()) {
 			coSimSlave->write_real(var.value_reference, std::stod(value));
+			return;
 		}
 		else if (var.is_string()){
 			coSimSlave->write_string(var.value_reference, value.c_str());
+			return;
 		}
-		else {
-			std::cout << "Error: Set intial parameter not possible: " << name << " value: " << value  <<
-				"\nPossible entries: " << modelDescription->model_variables << "\n";
+	}
+	std::cout << "Error: Could not set intial parameter: " << name << " to " << value << "\n"
+	<< "Possible model parameter variables are:\n";
+	for (auto const& var : *(modelDescription->model_variables)) {
+		if (var.causality == fmi4cpp::fmi2::causality::parameter) {
+			std::cout << var.name << "\n";
 		}
 	}
 	std::cout << std::flush;
@@ -100,7 +110,6 @@ std::string OSMPInterface::readOSIMessage(const std::string& name) {
 		std::cout << "Read " << name << std::endl;
 	}
 	//read message from FMU
-
 	for (auto& address : fromFMUAddresses) {
 		if (verbose) {
 			std::cout << "Found FMU Address: " << address.first << "\n";
