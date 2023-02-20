@@ -2,8 +2,8 @@
 @authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
 */
 
-#ifndef GRPCINTERFACE_H
-#define GRPCINTERFACE_H
+#ifndef GRPCSERVER_H
+#define GRPCSERVER_H
 
 #include <string>
 #include <filesystem>
@@ -16,14 +16,16 @@
 #include <grpcpp/security/server_credentials.h>
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 
-#include "OSMPInterface.h"
+#include "OSMP.h"
+#include "Record.h"
+#include "Playback.h"
 
 #include "grpc_proto_files/simulation_interface/SimulationInterface.pb.h"
 #include "grpc_proto_files/simulation_interface/SimulationInterface.grpc.pb.h"
 #include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.pb.h"
 #include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.grpc.pb.h"
 
-class GRPCInterface: public CoSiMa::rpc::SimulationInterface::Service, public CoSiMa::rpc::OSMPSimulationInterface::Service
+class GRPCServer: public CoSiMa::rpc::SimulationInterface::Service, public CoSiMa::rpc::OSMPSimulationInterface::Service
 {
 
 private:
@@ -33,23 +35,24 @@ private:
 	const int divider;
 	int doStepCounter = 1;
 
-	std::string fmu_name = "OSMP-FMU.fmu";
+	const std::string FMUNAME = "OSMP-FMU.fmu";
+	const std::string CSVINPUTNAME = "input.csv";
+	const std::string CSVOUTPUTNAME = "output.csv";
 
 	std::shared_ptr<grpc::Server> server;
 	std::unique_ptr<std::thread> server_thread;
 
-	OSMPInterface osmpInterface;
+	std::unique_ptr<ServiceInterface> serviceInterface;
 
 public:
-	GRPCInterface(std::string server_address, bool verbose, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), transaction_timeout(std::chrono::milliseconds(5000)) {};
+	GRPCServer(std::string server_address, bool verbose, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), transaction_timeout(std::chrono::milliseconds(5000)) {};
 	void startServer(const bool nonBlocking = false);
 	void stopServer();
 
-	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Int32* response) override;
-	virtual grpc::Status UploadFMU(grpc::ServerContext* context, const CoSiMa::rpc::FMU* request, ::CoSiMa::rpc::UploadStatus* response) override;
+	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response) override;
 	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
 	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
 	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) override;
 
 };
-#endif //!GRPCINTERFACE_H
+#endif //!GRPCSERVER_H

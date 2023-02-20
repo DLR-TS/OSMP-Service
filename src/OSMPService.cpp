@@ -1,4 +1,4 @@
-﻿#include "GRPCInterface.h"
+﻿#include "GRPCServer.h"
 
 int main(int argc, char *argv[])
 {
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
 	std::cout << "Server listens on: " << server_address << std::endl;
 
-	GRPCInterface grpc(server_address, verbose, divider);
+	GRPCServer grpc(server_address, verbose, divider);
 	grpc.startServer();
 
 	return 0;

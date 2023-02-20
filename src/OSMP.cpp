@@ -1,6 +1,6 @@
-#include "OSMPInterface.h"
+#include "OSMP.h"
 
-int OSMPInterface::create(const std::string& path) {
+int OSMP::create(const std::string& path) {
 	auto abs = std::filesystem::absolute(path);
 	if (!std::filesystem::exists(abs)) {
 		std::cout << "File does not exist: " << abs.string() << std::endl;
@@ -24,7 +24,7 @@ int OSMPInterface::create(const std::string& path) {
 	return 0;
 }
 
-void OSMPInterface::init(bool verbose, float starttime) {
+void OSMP::init(bool verbose, float starttime) {
 	this->verbose = verbose;
 	//Instance name cannot be set with FMU4cpp. The model identifier is used automatically instead
 	coSimSlave = coSimFMU->new_instance();
@@ -63,7 +63,7 @@ void OSMPInterface::init(bool verbose, float starttime) {
 	std::cout << std::flush;
 }
 
-void OSMPInterface::setInitialParameter(const std::string& name, const std::string& value) {
+void OSMP::setInitialParameter(const std::string& name, const std::string& value) {
 	if (verbose) {
 		std::cout << "Set intial parameter: " << name << " to " << value << std::endl;
 	}
@@ -98,14 +98,14 @@ void OSMPInterface::setInitialParameter(const std::string& name, const std::stri
 	std::cout << std::flush;
 }
 
-void OSMPInterface::finishInitialization() {
+void OSMP::finishInitialization() {
 	if (verbose) {
 		std::cout << "Try to exit initialization mode\n";
 	}
 	coSimSlave->exit_initialization_mode();
 }
 
-std::string OSMPInterface::readOSIMessage(const std::string& name) {
+std::string OSMP::readOSIMessage(const std::string& name) {
 	if (verbose) {
 		std::cout << "Read " << name << std::endl;
 	}
@@ -122,7 +122,7 @@ std::string OSMPInterface::readOSIMessage(const std::string& name) {
 	return "";
 }
 
-int OSMPInterface::writeOSIMessage(const std::string& name, const std::string& value) {
+int OSMP::writeOSIMessage(const std::string& name, const std::string& value) {
 	if (verbose) {
 		std::cout << "Write " << name << " Length: " << value.size() << std::endl;
 	}
@@ -139,7 +139,7 @@ int OSMPInterface::writeOSIMessage(const std::string& name, const std::string& v
 	return -1;
 }
 
-std::string OSMPInterface::readFromHeap(const address& address) {
+std::string OSMP::readFromHeap(const address& address) {
 	if (verbose) {
 		std::cout << address.name << ": lo: " << address.addr.base.lo << " hi: " << address.addr.base.hi << " size: " << address.size << "\n";
 	}
@@ -216,7 +216,7 @@ std::string OSMPInterface::readFromHeap(const address& address) {
 	return "";
 }
 
-void OSMPInterface::writeToHeap(address& address, const std::string& value) {
+void OSMP::writeToHeap(address& address, const std::string& value) {
 	if ((void*)address.addr.address != nullptr) {
 		//free the allocated storage of previous osimessage
 		free((void*)address.addr.address);
@@ -279,7 +279,7 @@ void OSMPInterface::writeToHeap(address& address, const std::string& value) {
 	}
 }
 
-int OSMPInterface::doStep(double stepSize) {
+int OSMP::doStep(double stepSize) {
 	if (verbose) {
 		std::cout << "Dostep with stepsize " << stepSize << "\n";
 	}
@@ -332,7 +332,7 @@ int OSMPInterface::doStep(double stepSize) {
 	return 0;
 }
 
-int OSMPInterface::readOutputPointerFromFMU() {
+int OSMP::readOutputPointerFromFMU() {
 	//iterate over unknowns declared as output
 	for (const auto& unknown : modelDescription->model_structure->outputs) {
 		// use index to translate unknown into scalar_variable. FMU ScalarVariable index begins at 1
@@ -350,7 +350,7 @@ int OSMPInterface::readOutputPointerFromFMU() {
 	return 0;
 }
 
-void OSMPInterface::writeInputPointerToFMU() {
+void OSMP::writeInputPointerToFMU() {
 	//set pointers of messages in fmi
 	for (const auto& inputVar : *(modelDescription->model_variables)) {
 		if (inputVar.causality != fmi4cpp::fmi2::causality::input || !inputVar.is_integer()) {
@@ -373,37 +373,7 @@ void OSMPInterface::writeInputPointerToFMU() {
 	}
 }
 
-bool OSMPInterface::matchingNames(const std::string& name1, const std::string& name2) {
-	std::size_t openbracketposname1 = name1.find("[");
-	//no index:
-	if (openbracketposname1 == std::string::npos) {
-		if (name1 == name2 || name1 == name2 + "In" || name1 == name2 + "Out"
-			|| name2 == name1 + "In" || name2 == name1 + "Out")
-			return true;
-	}
-	else {
-		//with index
-		std::string_view name1WithoutIndex = name1.substr(0, openbracketposname1);
-		std::size_t openbracketposname2 = name2.find("[");
-		std::string_view name2WithoutIndex = name2.substr(0, openbracketposname1);
-
-		if (name2WithoutIndex.find(name1WithoutIndex) != std::string::npos
-			|| name1WithoutIndex.find(name2WithoutIndex) != std::string::npos) {
-			//matching names
-			std::size_t closebracketposname1 = name1.find("]");
-			std::size_t closebracketposname2 = name2.find("]");
-			std::string_view name1_index = name1.substr(openbracketposname1 + 1, closebracketposname1 - 1);
-			std::string_view name2_index = name2.substr(openbracketposname2 + 1, closebracketposname2 - 1);
-			if (name1_index == name2_index) {
-				//matching index
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value) {
+void OSMP::saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value) {
 	//check for normal fmi variables count and valid
 	if (name == "count") {
 		//this->count = value;
@@ -456,37 +426,18 @@ void OSMPInterface::saveToAddressMap(std::map<std::string, address> &addressMap,
 	}
 }
 
-inline OSMPInterface::OSMPFMUSlaveStateWrapper::OSMPFMUSlaveStateWrapper(std::shared_ptr<fmi4cpp::fmi2::cs_slave> slave) {
+inline OSMP::OSMPFMUSlaveStateWrapper::OSMPFMUSlaveStateWrapper(std::shared_ptr<fmi4cpp::fmi2::cs_slave> slave) {
 	slave->get_fmu_state(state);
 	coSimSlave = slave;
 }
 
-inline OSMPInterface::OSMPFMUSlaveStateWrapper::~OSMPFMUSlaveStateWrapper() {
+inline OSMP::OSMPFMUSlaveStateWrapper::~OSMPFMUSlaveStateWrapper() {
 	coSimSlave->free_fmu_state(state);
 }
 
-std::optional<OSMPInterface::OSMPFMUSlaveStateWrapper> OSMPInterface::OSMPFMUSlaveStateWrapper::tryGetStateOf(std::shared_ptr<fmi4cpp::fmi2::cs_slave> slave) {
+std::optional<OSMP::OSMPFMUSlaveStateWrapper> OSMP::OSMPFMUSlaveStateWrapper::tryGetStateOf(std::shared_ptr<fmi4cpp::fmi2::cs_slave> slave) {
 	if (slave->get_model_description()->can_get_and_set_fmu_state) {
-		return OSMPInterface::OSMPFMUSlaveStateWrapper(slave);
+		return OSMP::OSMPFMUSlaveStateWrapper(slave);
 	}
 	return std::nullopt;
-}
-
-eOSIMessage OSMPInterface::getMessageType(const std::string& messageType) {
-	if (messageType.find("SensorView") != std::string::npos
-		&& messageType.find("Config") == std::string::npos) {
-		return SensorViewMessage;
-	}
-	else if (messageType.find("SensorView") != std::string::npos
-		&& messageType.find("Config") != std::string::npos) {
-		return SensorViewConfigurationMessage;
-	}
-	else if (messageType.find("SensorData") != std::string::npos) { return SensorDataMessage; }
-	else if (messageType.find("GroundTruth") != std::string::npos) { return GroundTruthMessage; }
-	else if (messageType.find("TrafficCommand") != std::string::npos) { return TrafficCommandMessage; }
-	else if (messageType.find("TrafficUpdate") != std::string::npos) { return TrafficUpdateMessage; }
-	else {
-		std::cout << "Error: Can not find message " << messageType << std::endl;
-		throw -1;
-	}
 }
