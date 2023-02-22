@@ -10,6 +10,9 @@ void Record::init(bool verbose, float starttime) {
 
 int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 	eOSIMessage messageType = getMessageType(name);
+	if (messageType == eOSIMessage::SensorViewConfigurationMessage) {
+		return 0;
+	}
 	if (!logFile.is_open()) {
 		logFile.open(fileName);
 		outputMessageType = messageType;
@@ -28,6 +31,10 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 
 std::string Record::readOSIMessage(const std::string& name) {
 	std::cout << "Nothing to read from " << name << std::endl;
+	if (getMessageType(name) == eOSIMessage::SensorViewConfigurationMessage) {
+		osi3::SensorViewConfiguration c;
+		return c.SerializeAsString();
+	}
 	return "";
 }
 

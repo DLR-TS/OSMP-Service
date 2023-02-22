@@ -43,6 +43,9 @@ std::string Playback::readOSIMessage(const std::string& name) {
 		std::cout << "End of file. Stop OSMP Service." << std::endl;
 		std::exit(0);
 	}
+	if (verbose) {
+		std::cout << "Remaining entries " << parsedCsv.size() << std::endl;
+	}
 	std::string message;
 	if (getMessageType(name) == eOSIMessage::TrafficUpdateMessage) {
 		createTrafficUpdateMessage().SerializeToString(&message);
@@ -58,7 +61,7 @@ int Playback::doStep(double stepSize) {
 
 osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
 	osi3::TrafficUpdate trafficUpdate;
-	while((std::stoull(parsedCsv.front()[0]) - timeOffsetMicroSeconds) * 10e-9 <= simulationTimeSeconds) {
+	while(!parsedCsv.empty() && (std::stoull(parsedCsv.front()[0]) - timeOffsetMicroSeconds) * 10e-6 <= simulationTimeSeconds) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(parsedCsv.front(), movingObject);
 		parsedCsv.pop();
@@ -68,15 +71,18 @@ osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
 	double nanos = modf(simulationTimeSeconds, &seconds) * 10e9;
 	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)seconds);
 	trafficUpdate.mutable_timestamp()->set_nanos((uint32_t)nanos);
+	if (verbose) {
+		std::cout << "Send Traffic Update with " << trafficUpdate.update_size() << " updates." << std::endl;
+	}
 	return trafficUpdate;
 }
 
 void Playback::createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject) {
 	//ts,id,h,w,l,class,vx,vy,vel,ax,ay,acc,heading,  (index 0-12)
-	//lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap, (index 13-21)
-	//x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z (index 22-36)
-
-	movingObject->mutable_id()->set_value(std::stol(values[1]));
+	//lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap, (index 13-20)
+	//x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z (index 21-35)
+	unsigned long long id = std::stoull(values[1]);
+	movingObject->mutable_id()->set_value((uint64_t)id);
 	osi3::BaseMoving* base = movingObject->mutable_base();
 
 	base->mutable_dimension()->set_height(std::stod(values[2]));
@@ -96,7 +102,7 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	base->mutable_acceleration()->set_y(std::stod(values[10]));
 	base->mutable_orientation()->set_yaw(std::stof(values[12]));
 
-	base->mutable_position()->set_x(std::stof(values[34]));
-	base->mutable_position()->set_y(std::stof(values[35]));
-	base->mutable_position()->set_z(std::stof(values[36]));
+	base->mutable_position()->set_x(std::stof(values[33]));
+	base->mutable_position()->set_y(std::stof(values[34]));
+	base->mutable_position()->set_z(std::stof(values[35]));
 }

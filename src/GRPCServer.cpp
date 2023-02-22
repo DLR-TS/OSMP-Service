@@ -44,30 +44,39 @@ grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::r
 		}
 	}
 
-	std::string filename;
+	std::string filename = isFMU ? FMUNAME : CSVINPUTNAME;
 	std::string file = config->binaryfile();
 
-	if (file.length() == 0) {
+	if (file.length() != 0) {
 		//write file
 		std::ofstream binFile(filename, std::ios::binary);
 		binFile.write(file.c_str(), file.size());
 		binFile.close();
-		filename = isFMU ? FMUNAME : CSVINPUTNAME;
 	}
 	else {
 		//no input file or model implies recording mode
-		filename = CSVOUTPUTNAME;
+		filename = LOGOUTPUTNAME;
 		isRecorder = true;
+		isFMU = false;
 	}
 
 	if (isFMU) {
 		serviceInterface = std::make_unique<OSMP>();
+		if (verbose) {
+			std::cout << "Running is OSMP mode." << std::endl;
+		}
 	}
-	else if (isRecorder){
+	else if (isRecorder) {
 		serviceInterface = std::make_unique<Record>();
+		if (verbose) {
+			std::cout << "Running is record mode." << std::endl;
+		}
 	}
 	else {
 		serviceInterface = std::make_unique<Playback>();
+		if (verbose) {
+			std::cout << "Running is plaback mode." << std::endl;
+		}
 	}
 	int responsevalue = serviceInterface->create(filename);
 

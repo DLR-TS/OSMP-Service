@@ -119,6 +119,10 @@ std::string OSMP::readOSIMessage(const std::string& name) {
 		}
 	}
 	std::cout << "Could not find matching message: " << name << std::endl;
+	if (getMessageType(name) == eOSIMessage::SensorViewConfigurationMessage) {
+		osi3::SensorViewConfiguration c;
+		return c.SerializeAsString();
+	}
 	return "";
 }
 

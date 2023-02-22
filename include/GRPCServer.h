@@ -37,7 +37,7 @@ private:
 
 	const std::string FMUNAME = "OSMP-FMU.fmu";
 	const std::string CSVINPUTNAME = "input.csv";
-	const std::string CSVOUTPUTNAME = "output.csv";
+	const std::string LOGOUTPUTNAME = "output.log";
 
 	std::shared_ptr<grpc::Server> server;
 	std::unique_ptr<std::thread> server_thread;
