@@ -68,7 +68,7 @@ osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
 	}
 
 	double seconds;
-	double nanos = modf(simulationTimeSeconds, &seconds) * 10e9;
+	double nanos = std::modf(simulationTimeSeconds, &seconds) * 10e9;
 	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)seconds);
 	trafficUpdate.mutable_timestamp()->set_nanos((uint32_t)nanos);
 	if (verbose) {

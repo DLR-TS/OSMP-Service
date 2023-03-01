@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <queue>
+#include <cmath>
 
 #include "ServiceInterface.h"
 #include "Utils.h"
