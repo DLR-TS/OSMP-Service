@@ -284,9 +284,6 @@ void OSMP::writeToHeap(address& address, const std::string& value) {
 }
 
 int OSMP::doStep(double stepSize) {
-	if (verbose) {
-		std::cout << "Dostep with stepsize " << stepSize << "\n";
-	}
 
 	writeInputPointerToFMU();
 

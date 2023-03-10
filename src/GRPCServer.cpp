@@ -106,6 +106,9 @@ grpc::Status GRPCServer::DoStep(grpc::ServerContext* context, const CoSiMa::rpc:
 	//divider default value: 1 
 	if (divider <= doStepCounter) {
 		doStepCounter = 1;
+    if (verbose) {
+      std::cout << "DoStep with stepsize " << stepSize << "\n";
+    }
 		response->set_value(serviceInterface->doStep(request->value()));
 		return grpc::Status::OK;
 	}
