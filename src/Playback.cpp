@@ -31,7 +31,7 @@ int Playback::create(const std::string& path) {
 void Playback::init(bool verbose, float starttime) {
 	this->verbose = verbose;
 
-	timeOffsetMicroSeconds = std::stoull(parsedCsv.front()[0]);
+	timeOffsetMicros = std::stoull(parsedCsv.front()[0]);
 }
 
 int Playback::writeOSIMessage(const std::string& name, const std::string& value) {
@@ -39,14 +39,17 @@ int Playback::writeOSIMessage(const std::string& name, const std::string& value)
 }
 
 std::string Playback::readOSIMessage(const std::string& name) {
+	std::string message;
 	if (parsedCsv.size() == 0) {
 		std::cout << "End of file. Stop OSMP Service." << std::endl;
-		std::exit(0);
+    std::exit(0);
+    //osi3::TrafficUpdate trafficUpdate;
+    //trafficUpdate.SerializeToString(&message);
+    //return message;
 	}
 	if (verbose) {
 		std::cout << "Remaining entries " << parsedCsv.size() << std::endl;
 	}
-	std::string message;
 	if (getMessageType(name) == eOSIMessage::TrafficUpdateMessage) {
 		createTrafficUpdateMessage().SerializeToString(&message);
 	}
@@ -55,22 +58,20 @@ std::string Playback::readOSIMessage(const std::string& name) {
 }
 
 int Playback::doStep(double stepSize) {
-	simulationTimeSeconds += stepSize;
+	simulationTimeMicros += (unsigned long long)(stepSize * 1000000);
 	return 0;
 }
 
 osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
 	osi3::TrafficUpdate trafficUpdate;
-	while(!parsedCsv.empty() && (std::stoull(parsedCsv.front()[0]) - timeOffsetMicroSeconds) * 10e-6 <= simulationTimeSeconds) {
+	while(!parsedCsv.empty() && std::stoull(parsedCsv.front()[0]) - timeOffsetMicros <= simulationTimeMicros) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(parsedCsv.front(), movingObject);
 		parsedCsv.pop();
 	}
 
-	double seconds;
-	double nanos = std::modf(simulationTimeSeconds, &seconds) * 10e9;
-	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)seconds);
-	trafficUpdate.mutable_timestamp()->set_nanos((uint32_t)nanos);
+	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)simulationTimeMicros / 1000000);
+	trafficUpdate.mutable_timestamp()->set_nanos((uint32_t)((simulationTimeMicros % 1000000) * 1000));
 	if (verbose) {
 		std::cout << "Send Traffic Update with " << trafficUpdate.update_size() << " updates." << std::endl;
 	}
@@ -100,7 +101,7 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	base->mutable_velocity()->set_y(std::stod(values[7]));
 	base->mutable_acceleration()->set_x(std::stod(values[9]));
 	base->mutable_acceleration()->set_y(std::stod(values[10]));
-	base->mutable_orientation()->set_yaw(std::stof(values[12]));
+	base->mutable_orientation()->set_yaw(std::stof(values[12]) * (M_PI / 180));
 
 	base->mutable_position()->set_x(std::stof(values[33]));
 	base->mutable_position()->set_y(std::stof(values[34]));

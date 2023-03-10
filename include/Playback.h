@@ -1,5 +1,5 @@
 ﻿/**
-@authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
+@authors German Aerospace Center: Björn Bahn
 */
 
 #ifndef PLAYBACK_H
@@ -22,8 +22,8 @@ class Playback : public ServiceInterface {
 	virtual int doStep(double stepSize) override;
 private:
 	std::queue<std::vector<std::string>> parsedCsv;
-	unsigned long long timeOffsetMicroSeconds;
-	double simulationTimeSeconds;
+	unsigned long long timeOffsetMicros;
+	unsigned long long simulationTimeMicros;
 
 	osi3::TrafficUpdate createTrafficUpdateMessage();
 	void createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject);
