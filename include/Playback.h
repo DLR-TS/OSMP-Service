@@ -5,6 +5,8 @@
 #ifndef PLAYBACK_H
 #define PLAYBACK_H
 
+#define _USE_MATH_DEFINES
+
 #include <fstream>
 #include <sstream>
 #include <queue>
