@@ -4,7 +4,7 @@
 
 #include "catch2/catch.hpp"
 
-#include "GRPCInterface.h"
+#include "GRPCServer.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/channel.h>
@@ -38,8 +38,8 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 
 	std::string hostAddrSource = "localhost:51426";
 	std::string hostAddrSensor = "localhost:51427";
-	GRPCInterface sourceGRPCService(hostAddrSource, false);
-	GRPCInterface sensorGRPCService(hostAddrSensor, false);
+	GRPCServer sourceGRPCService(hostAddrSource, false);
+	GRPCServer sensorGRPCService(hostAddrSensor, false);
 	sourceGRPCService.startServer(true);
 	sensorGRPCService.startServer(true);
 	grpc::ChannelArguments channelArgs;
@@ -54,22 +54,23 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	CoSiMa::rpc::SimulationInterface::Stub sensorSimStub(sensorChannel);
 	
 	CoSiMa::rpc::OSMPConfig config;
-	config.set_fmupath(testResourceDirectory + "/OSMPDummySource.fmu");
+	config.set_filepath(testResourceDirectory + "/OSMPDummySource.fmu");
 
-	CoSiMa::rpc::Int32 response;
 
-	auto status = sourceOSMPStub.SetConfig(CreateDeadlinedClientContext(transactionTimeout).get(), config, &response);
+	CoSiMa::rpc::Status rpcstatus;
 
-	CHECK(status.ok());
-	CHECK(0 == response.value());
-
-	config.set_fmupath(testResourceDirectory + "/OSMPDummySensor.fmu");
-	response.Clear();
-
-	status = sensorOSMPStub.SetConfig(CreateDeadlinedClientContext(transactionTimeout).get(), config, &response);
+	auto status = sourceOSMPStub.SetConfig(CreateDeadlinedClientContext(transactionTimeout).get(), config, &rpcstatus);
 
 	CHECK(status.ok());
-	CHECK(0 == response.value());
+	CHECK(CoSiMa::rpc::Ok == rpcstatus.code());
+
+	config.set_filepath(testResourceDirectory + "/OSMPDummySensor.fmu");
+	rpcstatus.Clear();
+
+	status = sensorOSMPStub.SetConfig(CreateDeadlinedClientContext(transactionTimeout).get(), config, &rpcstatus);
+
+	CHECK(status.ok());
+	CHECK(CoSiMa::rpc::Ok == rpcstatus.code());
 
 	CoSiMa::rpc::String osmpSensorViewOut;
 	CoSiMa::rpc::Bytes serializedSensorView;
@@ -82,10 +83,11 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	CHECK(0 <= serializedSensorView.value().size());
 
 	CoSiMa::rpc::NamedBytes osmpSensorViewIn;
-	response.Clear();
+	rpcstatus.Clear();
 	osmpSensorViewIn.set_name("OSMPSensorViewIn");
 	osmpSensorViewIn.set_value(serializedSensorView.value());
 
+	CoSiMa::rpc::Int32 response;
 	status = sensorSimStub.SetStringValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewIn, &response);
 
 	CHECK(status.ok());

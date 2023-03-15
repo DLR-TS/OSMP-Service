@@ -25,7 +25,7 @@
 #include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.pb.h"
 #include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.grpc.pb.h"
 
-class GRPCServer: public CoSiMa::rpc::SimulationInterface::Service, public CoSiMa::rpc::OSMPSimulationInterface::Service
+class GRPCServer : public CoSiMa::rpc::SimulationInterface::Service, public CoSiMa::rpc::OSMPSimulationInterface::Service
 {
 
 private:
@@ -35,6 +35,8 @@ private:
 	const int divider;
 	int doStepCounter = 1;
 
+	enum OSMPSERVICEMODE { FMU, PLAYBACK, RECORD };
+
 	const std::string FMUNAME = "OSMP-FMU.fmu";
 	const std::string CSVINPUTNAME = "input.csv";
 	const std::string LOGOUTPUTNAME = "output.log";
@@ -43,6 +45,9 @@ private:
 	std::unique_ptr<std::thread> server_thread;
 
 	std::unique_ptr<ServiceInterface> serviceInterface;
+
+	OSMPSERVICEMODE determineMode(const CoSiMa::rpc::OSMPConfig* config);
+	std::string saveFile(const CoSiMa::rpc::OSMPConfig* config, OSMPSERVICEMODE mode);
 
 public:
 	GRPCServer(std::string server_address, bool verbose, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), transaction_timeout(std::chrono::milliseconds(5000)) {};

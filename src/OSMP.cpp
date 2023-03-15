@@ -17,7 +17,7 @@ int OSMP::create(const std::string& path) {
 		std::cout << "Try parsing model description" << std::endl;
 	}
 	modelDescription = coSimFMU->get_model_description();
-	
+
 	if (verbose) {
 		std::cout << "Parsed model description successfully" << std::endl;
 	}
@@ -52,7 +52,7 @@ void OSMP::init(bool verbose, float starttime) {
 			fmi2Integer integer;
 			coSimSlave->read_integer(var.value_reference, integer);
 			saveToAddressMap(fromFMUAddresses, var.name, integer);
-		}				
+		}
 	}
 	if (toFMUAddresses.size() == 0) {
 		std::cout << "Write: No messages to FMU defined.\n";
@@ -83,13 +83,13 @@ void OSMP::setInitialParameter(const std::string& name, const std::string& value
 			coSimSlave->write_real(var.value_reference, std::stod(value));
 			return;
 		}
-		else if (var.is_string()){
+		else if (var.is_string()) {
 			coSimSlave->write_string(var.value_reference, value.c_str());
 			return;
 		}
 	}
 	std::cout << "Error: Could not set intial parameter: " << name << " to " << value << "\n"
-	<< "Possible model parameter variables are:\n";
+		<< "Possible model parameter variables are:\n";
 	for (auto const& var : *(modelDescription->model_variables)) {
 		if (var.causality == fmi4cpp::fmi2::causality::parameter) {
 			std::cout << var.name << "\n";
@@ -231,7 +231,7 @@ void OSMP::writeToHeap(address& address, const std::string& value) {
 		address.size = (int)sensorView.ByteSizeLong();
 		address.addr.address = (unsigned long long)malloc(address.size);
 		if (verbose && value.size()) {
-				std::cout << sensorView.DebugString() << std::endl;
+			std::cout << sensorView.DebugString() << std::endl;
 		}
 		sensorView.SerializeToArray((void*)address.addr.address, address.size);
 		break;

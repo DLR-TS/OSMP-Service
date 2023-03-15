@@ -33,61 +33,75 @@ void GRPCServer::stopServer()
 
 grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response)
 {
-	bool isFMU = true;
-	bool isRecorder = false;
+	std::string filename;
+	OSMPSERVICEMODE mode = determineMode(config);
 
-	if (config->filepath().length() >= 5) {//a.fmu or a.csv
-		if (0 == config->filepath().compare(config->filepath().length() - 3, 3, "fmu")) {
-			isFMU = true;
-		} else if (0 == config->filepath().compare(config->filepath().length() - 3, 3, "csv")) {
-			isFMU = false;
-		}
+	if (mode == RECORD) {
+		filename = LOGOUTPUTNAME;
+	}
+	else { //FMU or PLAYBACK
+		filename = saveFile(config, mode);
 	}
 
-	std::string filename = isFMU ? FMUNAME : CSVINPUTNAME;
-	std::string file = config->binaryfile();
+	std::string modename;
+	switch (mode) {
+	case FMU:
+		serviceInterface = std::make_unique<OSMP>();
+		modename = "OSMP";
+		break;
+	case PLAYBACK:
+		serviceInterface = std::make_unique<Playback>();
+		modename = "playback";
+		break;
+	case RECORD:
+		serviceInterface = std::make_unique<Record>();
+		modename = "record";
+		break;
+	}
 
+	if (verbose) {
+		std::cout << "Running in " << modename << " mode." << std::endl;
+	}
+
+	int responsevalue = serviceInterface->create(filename);
+	serviceInterface->init(verbose);
+
+	for (auto& initialparameter : config->parameter()) {
+		serviceInterface->setInitialParameter(initialparameter.name(), initialparameter.value());
+	}
+
+	serviceInterface->finishInitialization();
+
+	response->set_code(responsevalue == 0 ? CoSiMa::rpc::Ok : CoSiMa::rpc::Failed);
+	return grpc::Status::OK;
+}
+
+GRPCServer::OSMPSERVICEMODE GRPCServer::determineMode(const CoSiMa::rpc::OSMPConfig* config) {
+	if (config->filepath().length()) {
+		if (0 == config->filepath().compare(config->filepath().length() - 3, 3, "fmu")) {
+			return FMU;
+		}
+		return PLAYBACK;
+	}
+	return RECORD;
+}
+
+std::string GRPCServer::saveFile(const CoSiMa::rpc::OSMPConfig* config, GRPCServer::OSMPSERVICEMODE mode) {
+	std::string filename;
+	std::string file = config->binaryfile();
 	if (file.length() != 0) {
 		//write file
+		if (mode == OSMPSERVICEMODE::FMU) { filename = FMUNAME; }
+		if (mode == OSMPSERVICEMODE::PLAYBACK) { filename = CSVINPUTNAME; }
 		std::ofstream binFile(filename, std::ios::binary);
 		binFile.write(file.c_str(), file.size());
 		binFile.close();
 	}
 	else {
-		//no input file or model implies recording mode
-		filename = LOGOUTPUTNAME;
-		isRecorder = true;
-		isFMU = false;
+		//read file with given path
+		filename = config->filepath();
 	}
-
-	if (isFMU) {
-		serviceInterface = std::make_unique<OSMP>();
-		if (verbose) {
-			std::cout << "Running is OSMP mode." << std::endl;
-		}
-	}
-	else if (isRecorder) {
-		serviceInterface = std::make_unique<Record>();
-		if (verbose) {
-			std::cout << "Running is record mode." << std::endl;
-		}
-	}
-	else {
-		serviceInterface = std::make_unique<Playback>();
-		if (verbose) {
-			std::cout << "Running is plaback mode." << std::endl;
-		}
-	}
-	int responsevalue = serviceInterface->create(filename);
-
-	serviceInterface->init(verbose);
-	for (auto& initialparameter : config->parameter()) {
-		serviceInterface->setInitialParameter(initialparameter.name(), initialparameter.value());
-	}
-	serviceInterface->finishInitialization();
-	
-	response->set_code(responsevalue == 0 ? CoSiMa::rpc::Ok : CoSiMa::rpc::Failed);
-	return grpc::Status::OK;
+	return filename;
 }
 
 grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
@@ -106,9 +120,9 @@ grpc::Status GRPCServer::DoStep(grpc::ServerContext* context, const CoSiMa::rpc:
 	//divider default value: 1 
 	if (divider <= doStepCounter) {
 		doStepCounter = 1;
-    if (verbose) {
-      std::cout << "DoStep with stepsize " << request->value() << "\n";
-    }
+		if (verbose) {
+			std::cout << "DoStep with stepsize " << request->value() << std::endl;
+		}
 		response->set_value(serviceInterface->doStep(request->value()));
 		return grpc::Status::OK;
 	}

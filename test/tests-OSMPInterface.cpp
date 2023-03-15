@@ -4,12 +4,12 @@
 
 #include "catch2/catch.hpp"
 
-#include "OSMPInterface.h"
+#include "OSMP.h"
 #include "TestResourceDirectory.h"
 
-TEST_CASE("OSMP Interface Test","[OSMPInterface]") {
+TEST_CASE("OSMP Interface Test", "[OSMPInterface]") {
 
-	OSMPInterface source;
+	OSMP source;
 
 	CHECK(0 == source.create(testResourceDirectory + "/OSMPDummySource.fmu"));
 	source.init(false);
@@ -28,7 +28,7 @@ TEST_CASE("OSMP Interface Test","[OSMPInterface]") {
 	serializedSensorView = source.readOSIMessage("OSMPSensorViewOut");
 	CHECK(0 < serializedSensorView.size());
 
-	OSMPInterface sensor;
+	OSMP sensor;
 
 	CHECK(0 == sensor.create(testResourceDirectory + "/OSMPDummySensor.fmu"));
 	sensor.init(false);

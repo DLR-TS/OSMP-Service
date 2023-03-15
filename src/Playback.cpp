@@ -42,10 +42,10 @@ std::string Playback::readOSIMessage(const std::string& name) {
 	std::string message;
 	if (parsedCsv.size() == 0) {
 		std::cout << "End of file. Stop OSMP Service." << std::endl;
-    std::exit(0);
-    //osi3::TrafficUpdate trafficUpdate;
-    //trafficUpdate.SerializeToString(&message);
-    //return message;
+		std::exit(0);
+		//osi3::TrafficUpdate trafficUpdate;
+		//trafficUpdate.SerializeToString(&message);
+		//return message;
 	}
 	if (verbose) {
 		std::cout << "Remaining entries " << parsedCsv.size() << std::endl;
@@ -64,7 +64,7 @@ int Playback::doStep(double stepSize) {
 
 osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
 	osi3::TrafficUpdate trafficUpdate;
-	while(!parsedCsv.empty() && std::stoull(parsedCsv.front()[0]) - timeOffsetMicros <= simulationTimeMicros) {
+	while (!parsedCsv.empty() && std::stoull(parsedCsv.front()[0]) - timeOffsetMicros <= simulationTimeMicros) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(parsedCsv.front(), movingObject);
 		parsedCsv.pop();

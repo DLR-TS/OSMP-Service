@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[])
 {
-	std::cout << "Welcome to OSMPClient.\nCurrent directory: " 
+	std::cout << "Welcome to OSMPClient.\nCurrent directory: "
 		<< std::filesystem::current_path() << "\n" << std::endl;
 
 	//Server address deliberately chosen to accept any connection
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 			verbose = true;
 			std::cout << "Verbose messages enabled." << std::endl;
 		}
-		else if (parameter == "-divide"){
+		else if (parameter == "-divide") {
 			divider = std::stoi(std::string(argv[++i]));
 		}
 		else { //(ip &) port
