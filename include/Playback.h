@@ -9,7 +9,6 @@
 
 #include <fstream>
 #include <sstream>
-#include <queue>
 #include <cmath>
 
 #include "ServiceInterface.h"
@@ -23,10 +22,12 @@ class Playback : public ServiceInterface {
 	virtual std::string readOSIMessage(const std::string& name) override;
 	virtual int doStep(double stepSize) override;
 private:
-	std::queue<std::vector<std::string>> parsedCsv;
+	std::ifstream filestream;
+	std::vector<std::string> currentLine;
 	unsigned long long timeOffsetMicros;
 	unsigned long long simulationTimeMicros;
 
+	std::vector<std::string> parseNextLine();
 	osi3::TrafficUpdate createTrafficUpdateMessage();
 	void createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject);
 };

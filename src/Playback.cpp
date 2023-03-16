@@ -1,37 +1,33 @@
 #include "Playback.h"
 
 int Playback::create(const std::string& path) {
-	std::ifstream data(path.c_str());
-	std::string line;
-	std::getline(data, line);
-	std::string expectedBeginning = "ts,id,h,w,l,class,vx,vy,vel,ax,ay,acc,heading,lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap,x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z";
-	if (line.rfind(expectedBeginning, 0)) {
-		std::cout << "Expected different csv header.\n"
-			<< "Is:    " << line << line.size() << "\nShall: " << expectedBeginning << expectedBeginning.size() << std::endl;
-		std::exit(0);
-	}
-	while (std::getline(data, line))
-	{
-		std::stringstream lineStream(line);
-		std::string cell;
-		std::vector<std::string> parsedRow;
-		while (std::getline(lineStream, cell, ','))
-		{
-			parsedRow.push_back(cell);
-		}
-
-		parsedCsv.push(parsedRow);
-	}
-
-	std::cout << "Parsed " << parsedCsv.size() << " lines of csv." << std::endl;
-
+	filestream.open(path.c_str());
 	return 0;
 }
 
 void Playback::init(bool verbose, float starttime) {
 	this->verbose = verbose;
+	//std::string expectedBeginning = "ts,id,h,w,l,class,vx,vy,vel,ax,ay,acc,heading,lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap,x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z";
 
-	timeOffsetMicros = std::stoull(parsedCsv.front()[0]);
+	currentLine = parseNextLine();
+	if (currentLine.size() >= 2 && currentLine[0] == "ts" && currentLine[1] == "id") {
+		currentLine = parseNextLine();
+	}
+
+	timeOffsetMicros = std::stoull(currentLine[0]);
+}
+
+std::vector<std::string> Playback::parseNextLine() {
+	std::string line;
+	std::getline(filestream, line);
+	std::stringstream lineStream(line);
+	std::string cell;
+	std::vector<std::string> parsed;
+	while (std::getline(lineStream, cell, ','))
+	{
+		parsed.push_back(cell);
+	}
+	return parsed;
 }
 
 int Playback::writeOSIMessage(const std::string& name, const std::string& value) {
@@ -40,16 +36,6 @@ int Playback::writeOSIMessage(const std::string& name, const std::string& value)
 
 std::string Playback::readOSIMessage(const std::string& name) {
 	std::string message;
-	if (parsedCsv.size() == 0) {
-		std::cout << "End of file. Stop OSMP Service." << std::endl;
-		std::exit(0);
-		//osi3::TrafficUpdate trafficUpdate;
-		//trafficUpdate.SerializeToString(&message);
-		//return message;
-	}
-	if (verbose) {
-		std::cout << "Remaining entries " << parsedCsv.size() << std::endl;
-	}
 	if (getMessageType(name) == eOSIMessage::TrafficUpdateMessage) {
 		createTrafficUpdateMessage().SerializeToString(&message);
 	}
@@ -64,10 +50,10 @@ int Playback::doStep(double stepSize) {
 
 osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
 	osi3::TrafficUpdate trafficUpdate;
-	while (!parsedCsv.empty() && std::stoull(parsedCsv.front()[0]) - timeOffsetMicros <= simulationTimeMicros) {
+	while (std::stoull(currentLine[0]) - timeOffsetMicros <= simulationTimeMicros) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
-		createMovingObject(parsedCsv.front(), movingObject);
-		parsedCsv.pop();
+		createMovingObject(currentLine, movingObject);
+		currentLine = parseNextLine();
 	}
 
 	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)simulationTimeMicros / 1000000);
