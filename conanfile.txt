@@ -1,11 +1,11 @@
 [requires]
-protobuf/3.19.2
+protobuf/3.21.9
 # requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.31.0/BUILDING.md#windows)
 nasm/2.15.05
-catch2/2.12.1
-fakeit/2.0.7
+catch2/2.13.9
+fakeit/2.3.0
 # fmi4cpp dependencies:
-boost/1.69.0
+boost/1.80.0
 libzip/1.8.0
 bzip2/1.0.8
 zlib/1.2.12
@@ -16,10 +16,6 @@ cmake_paths
 cmake_find_package
 
 [options]
-protobuf:lite=False
-#protobuf:shared=True
-protobuf:with_zlib=True
-boost:shared=True
 libzip:crypto=False
 libzip:with_lzma=False
 libzip:with_zstd=False

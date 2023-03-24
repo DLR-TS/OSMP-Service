@@ -2,8 +2,8 @@
 @authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
 */
 
-#ifndef OSMPInterface_H
-#define OSMPInterface_H
+#ifndef OSMP_H
+#define OSMP_H
 #define NOMINMAX
 
 #include <string>
@@ -11,27 +11,22 @@
 #include <thread>
 
 #include "fmi4cpp/fmi4cpp.hpp"
-
+#include "ServiceInterface.h"
+#include "Utils.h"
 #include "OSIMessages.h"
 
-class OSMPInterface 
+class OSMP : public ServiceInterface
 {
 public:
-	int create(const std::string& path);
-	int init(bool verbose, float starttime = 0);
-	std::string read(const std::string& name);
-	int doStep(double stepSize = 1);
-	void setParameter(std::vector<std::pair<std::string, std::string>>&);
-	int write(const std::string& name,const std::string& value);
-	int close();
+	virtual int create(const std::string& path) override;
+	virtual void init(bool verbose, float starttime = 0) override;
+	virtual void finishInitialization() override;
 
-	enum FMUState {
-		UNINITIALIZED = 0,
-		IN_INITIALIZATION_MODE = 1,//can perform algebraic loops for initialization
-		INITIALIZED=2,//ready for use, can perform steps etc.
-		TERMINATED=8// fmu was shutdown/destroyed/whatever
-	};
+	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
+	virtual std::string readOSIMessage(const std::string& name) override;
+	virtual int doStep(double stepSize) override;
 
+	void setInitialParameter(const std::string& name, const std::string& value) override;
 protected:
 	class OSMPFMUSlaveStateWrapper {
 	private:
@@ -51,7 +46,7 @@ private:
 	//fmi4cpp::fmi4cppFMUstate state;
 	std::unique_ptr<fmi4cpp::fmi2::cs_fmu> coSimFMU;
 	std::shared_ptr<fmi4cpp::fmi2::cs_slave> coSimSlave;
-	FMUState fmuState = UNINITIALIZED;
+	std::shared_ptr<const fmi4cpp::fmi2::cs_model_description> modelDescription;
 
 	/**
 	Temporary storage for osmp messages (name, size, address)
@@ -66,12 +61,9 @@ private:
 	void saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value);
 
 	int readOutputPointerFromFMU();
-	int writeInputPointerToFMU();
-	bool matchingNames(const std::string& name1, const std::string& name2);
+	void writeInputPointerToFMU();
 	std::string readFromHeap(const address& address);
-	int writeToHeap(address& address, const std::string& value);
-
-	eOSIMessage getMessageType(const std::string& messageType);
+	void writeToHeap(address& address, const std::string& value);
 
 	osi3::SensorView sensorView;
 	osi3::SensorViewConfiguration sensorViewConfiguration;
@@ -88,10 +80,6 @@ private:
 	stores the field \"count\" from fmi
 	*/
 	//int count;
-	/**
-	* verbose logs
-	*/
-	bool verbose = false;
 };
 
-#endif // !OSMPInterface_H
+#endif // !OSMP_H
