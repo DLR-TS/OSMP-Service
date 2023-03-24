@@ -8,6 +8,7 @@ fakeit/2.3.0
 boost/1.80.0
 libzip/1.8.0
 bzip2/1.0.8
+zlib/1.2.12
 
 [generators]
 cmake
