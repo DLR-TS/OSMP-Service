@@ -43,7 +43,7 @@ void OSMP::init(bool verbose, float starttime) {
 			if (verbose) {
 				std::cout << "In Ref: " << var.value_reference << " " << var.name << "\n";
 			}
-			saveToAddressMap(toFMUAddresses, var.name, 0);
+			saveToAddressMap(toFMUAddresses, var.value_reference, var.name, 0);
 		}
 		else if (var.is_integer() && var.causality == fmi4cpp::fmi2::causality::output || var.causality == fmi4cpp::fmi2::causality::calculatedParameter) {
 			if (verbose) {
@@ -51,7 +51,7 @@ void OSMP::init(bool verbose, float starttime) {
 			}
 			fmi2Integer integer;
 			coSimSlave->read_integer(var.value_reference, integer);
-			saveToAddressMap(fromFMUAddresses, var.name, integer);
+			saveToAddressMap(fromFMUAddresses, var.value_reference, var.name, integer);
 		}
 	}
 	if (toFMUAddresses.size() == 0) {
@@ -341,7 +341,7 @@ int OSMP::readOutputPointerFromFMU() {
 		if (outputVar.is_integer()) {
 			fmi2Integer integer;
 			coSimSlave->read_integer(outputVar.value_reference, integer);
-			saveToAddressMap(fromFMUAddresses, outputVar.name, integer);
+			saveToAddressMap(fromFMUAddresses, outputVar.value_reference, outputVar.name, integer);
 		}
 	}
 	if (!valid) {
@@ -374,7 +374,7 @@ void OSMP::writeInputPointerToFMU() {
 	}
 }
 
-void OSMP::saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value) {
+void OSMP::saveToAddressMap(std::map<std::string, address> &addressMap, const fmi2ValueReference valueReference, const std::string& name, int value) {
 	//check for normal fmi variables count and valid
 	if (name == "count") {
 		//this->count = value;
@@ -441,4 +441,16 @@ std::optional<OSMP::OSMPFMUSlaveStateWrapper> OSMP::OSMPFMUSlaveStateWrapper::tr
 		return OSMP::OSMPFMUSlaveStateWrapper(slave);
 	}
 	return std::nullopt;
+}
+
+void OSMP::close() {
+	coSimSlave->terminate();
+	toFMUAddresses.clear();
+	fromFMUAddresses.clear();
+	sensorView.Clear();
+	sensorViewConfiguration.Clear();
+	sensorData.Clear();
+	groundTruth.Clear();
+	trafficCommand.Clear();
+	trafficUpdate.Clear();
 }

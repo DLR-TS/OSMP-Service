@@ -33,15 +33,9 @@ void GRPCServer::stopServer()
 
 grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response)
 {
-	std::string filename;
-	OSMPSERVICEMODE mode = determineMode(config);
 
-	if (mode == RECORD) {
-		filename = LOGOUTPUTNAME;
-	}
-	else { //FMU or PLAYBACK
-		filename = saveFile(config, mode);
-	}
+	OSMPSERVICEMODE mode = determineMode(config);
+	std::string filename = saveFile(config, mode);
 
 	std::string modename;
 	switch (mode) {
@@ -133,4 +127,10 @@ grpc::Status GRPCServer::DoStep(grpc::ServerContext* context, const CoSiMa::rpc:
 		}
 		return grpc::Status::OK;
 	}
+}
+
+grpc::Status GRPCServer::Close(grpc::ServerContext* context, const CoSiMa::rpc::Bool* request, CoSiMa::rpc::Bool* response) {
+	serviceInterface->close();
+	response->set_value(true);
+	return grpc::Status::OK;
 }

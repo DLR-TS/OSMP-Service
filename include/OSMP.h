@@ -25,7 +25,7 @@ public:
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
 	virtual std::string readOSIMessage(const std::string& name) override;
 	virtual int doStep(double stepSize) override;
-
+	virtual void close() override;
 	void setInitialParameter(const std::string& name, const std::string& value) override;
 protected:
 	class OSMPFMUSlaveStateWrapper {
@@ -55,10 +55,11 @@ private:
 	/**
 	Save the annotated value in the address map. Supported names are count, valid, <>.base.hi , <>.base.lo, <>.size.
 	\param std::map<std::string, address> &addressMap The map, the value is mapped in.
+	\param fmi2ValueReference valueReference
 	\param std::string name name of the variable. Supported names are count, valid, <>.base.hi , <>.base.lo, <>.size.
 	\param int value The value to be stored.
 	*/
-	void saveToAddressMap(std::map<std::string, address> &addressMap, const std::string& name, int value);
+	void saveToAddressMap(std::map<std::string, address> &addressMap, const fmi2ValueReference valueReference, const std::string& name, int value);
 
 	int readOutputPointerFromFMU();
 	void writeInputPointerToFMU();

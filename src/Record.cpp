@@ -1,7 +1,7 @@
 #include "Record.h"
+#include <map>
 
 int Record::create(const std::string& name) {
-	fileName = name;
 	return 0;
 }
 
@@ -13,19 +13,15 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 	if (messageType == eOSIMessage::SensorViewConfigurationMessage) {
 		return 0;
 	}
-	if (!logFile.is_open()) {
-		logFile.open(fileName);
-		outputMessageType = messageType;
+
+	auto file = output.find(name);
+	if (file == output.end()) {
+		std::ofstream* logFile = new std::ofstream(name + ".log");
+		output.emplace(name, logFile);
+		file = output.find(name);
 	}
-	if (messageType == outputMessageType) {
-		//format: size as long, message
-		logFile << (long)value.size();
-		logFile << value;
-		logFile << std::flush;
-	}
-	else {
-		std::cerr << "Different message types in one file are not supported by OSMP-Service. Please reconfigure your simulation setup." << std::endl;
-	}
+	//format: size as long, message
+	*file->second << (long)value.size() << value << std::flush;
 	return 0;
 }
 
@@ -40,4 +36,13 @@ std::string Record::readOSIMessage(const std::string& name) {
 
 int Record::doStep(double stepSize) {
 	return 0;
+}
+
+void Record::close() {
+	for (auto& file : output) {
+		file.second->close();
+		delete file.second;
+		file.second = 0;
+	}
+	output.clear();
 }
