@@ -39,7 +39,6 @@ private:
 
 	const std::string FMUNAME = "OSMP-FMU.fmu";
 	const std::string CSVINPUTNAME = "input.csv";
-	const std::string LOGOUTPUTNAME = "output.log";
 
 	std::shared_ptr<grpc::Server> server;
 	std::unique_ptr<std::thread> server_thread;
@@ -58,6 +57,6 @@ public:
 	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
 	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
 	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) override;
-
+	virtual grpc::Status Close(grpc::ServerContext* context, const CoSiMa::rpc::Bool* request, CoSiMa::rpc::Bool* response) override;
 };
 #endif //!GRPCSERVER_H

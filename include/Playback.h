@@ -21,6 +21,7 @@ class Playback : public ServiceInterface {
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
 	virtual std::string readOSIMessage(const std::string& name) override;
 	virtual int doStep(double stepSize) override;
+	virtual void close() override;
 private:
 	std::ifstream filestream;
 	std::vector<std::string> currentLine;

@@ -6,6 +6,7 @@
 #define RECORD_H
 
 #include <fstream>
+#include <map>
 
 #include "Utils.h"
 #include "ServiceInterface.h"
@@ -17,11 +18,9 @@ class Record : public ServiceInterface {
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
 	virtual std::string readOSIMessage(const std::string& name) override;
 	virtual int doStep(double stepSize) override;
-
+	virtual void close() override;
 private:
-	std::string fileName;
-	std::ofstream logFile;
-	eOSIMessage outputMessageType;
+	std::map<std::string, std::ofstream*> output;
 };
 
 #endif // !RECORD_H

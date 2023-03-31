@@ -93,3 +93,8 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	base->mutable_position()->set_y(std::stof(values[34]));
 	base->mutable_position()->set_z(std::stof(values[35]));
 }
+
+void Playback::close() {
+	filestream.close();
+	currentLine.clear();
+}
