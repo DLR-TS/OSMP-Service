@@ -386,7 +386,7 @@ void OSMP::saveToAddressMap(std::map<std::string, address> &addressMap, const fm
 	}
 
 	//compare return 0 -> equals
-	if (0 == name.compare(name.length() - 8, 8, ".base.hi")) {
+	if (name.length() >= 9 && 0 == name.compare(name.length() - 8, 8, ".base.hi")) {
 		std::string prefixWithIndex = name.substr(0, name.length() - 8);
 
 		if (addressMap.find(prefixWithIndex) == addressMap.end()) {
@@ -399,7 +399,7 @@ void OSMP::saveToAddressMap(std::map<std::string, address> &addressMap, const fm
 			addressMap.at(prefixWithIndex).addr.base.hi = value;
 		}
 	}
-	else if (0 == name.compare(name.length() - 8, 8, ".base.lo")) {
+	else if (name.length() >= 9 && 0 == name.compare(name.length() - 8, 8, ".base.lo")) {
 		std::string prefixWithIndex = name.substr(0, name.length() - 8);
 
 		if (addressMap.find(prefixWithIndex) == addressMap.end()) {
@@ -412,7 +412,7 @@ void OSMP::saveToAddressMap(std::map<std::string, address> &addressMap, const fm
 			addressMap.at(prefixWithIndex).addr.base.lo = value;
 		}
 	}
-	else if (0 == name.compare(name.length() - 5, 5, ".size")) {
+	else if (name.length() >= 6 && 0 == name.compare(name.length() - 5, 5, ".size")) {;
 		std::string prefixWithIndex = name.substr(0, name.length() - 5);
 
 		if (addressMap.find(prefixWithIndex) == addressMap.end()) {
