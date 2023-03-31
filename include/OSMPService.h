@@ -6,7 +6,6 @@
 #define OSMPSERVICE_H
 
 #include <iostream>
-#include <vector>
 #include <string>
 
 #endif // !OSMPSERVICE_H
