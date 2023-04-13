@@ -15,12 +15,16 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 
 	auto file = output.find(name);
 	if (file == output.end()) {
-		std::ofstream* logFile = new std::ofstream(name + ".log");
+		std::ofstream* logFile = new std::ofstream(name + ".osi", std::ofstream::binary);
 		output.emplace(name, logFile);
 		file = output.find(name);
 	}
+	std::ofstream* stream = file->second;
+
+	uint32_t size = value.size();
 	//format: size as long, message
-	*file->second << (long)value.size() << value << std::flush;
+	stream->write((char*)&size, sizeof(size));
+	*stream << value << std::flush;
 	return 0;
 }
 
