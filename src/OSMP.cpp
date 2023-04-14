@@ -105,7 +105,7 @@ void OSMP::finishInitialization() {
 	coSimSlave->exit_initialization_mode();
 }
 
-std::string OSMP::readOSIMessage(const std::string& name) {
+int OSMP::readOSIMessage(const std::string& name, std::string& message) {
 	if (verbose) {
 		std::cout << "Read " << name << std::endl;
 	}
@@ -115,15 +115,17 @@ std::string OSMP::readOSIMessage(const std::string& name) {
 			std::cout << "Found FMU Address: " << address.first << "\n";
 		}
 		if (matchingNames(address.first, name)) {
-			return readFromHeap(address.second);
+			message = readFromHeap(address.second);
+			return 0;
 		}
 	}
 	std::cout << "Could not find matching message: " << name << std::endl;
 	if (getMessageType(name) == eOSIMessage::SensorViewConfigurationMessage) {
 		osi3::SensorViewConfiguration c;
-		return c.SerializeAsString();
+		message = c.SerializeAsString();
+		return 0;
 	}
-	return "";
+	return 1;
 }
 
 int OSMP::writeOSIMessage(const std::string& name, const std::string& value) {

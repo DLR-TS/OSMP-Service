@@ -19,7 +19,7 @@ class Playback : public ServiceInterface {
 	virtual void init(bool verbose, float starttime = 0) override;
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
-	virtual std::string readOSIMessage(const std::string& name) override;
+	virtual int readOSIMessage(const std::string& name, std::string& message) override;
 	virtual int doStep(double stepSize) override;
 	virtual void close() override;
 private:
@@ -29,7 +29,7 @@ private:
 	unsigned long long simulationTimeMicros;
 
 	std::vector<std::string> parseNextLine();
-	osi3::TrafficUpdate createTrafficUpdateMessage();
+	int createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate);
 	void createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject);
 };
 

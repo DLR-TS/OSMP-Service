@@ -17,7 +17,7 @@ public:
 	virtual void finishInitialization() {};
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) = 0;
-	virtual std::string readOSIMessage(const std::string& name) = 0;
+	virtual int readOSIMessage(const std::string& name, std::string& message) = 0;
 	virtual int doStep(double stepSize) = 0;
 	virtual void close() = 0;
 

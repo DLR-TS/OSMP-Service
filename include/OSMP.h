@@ -23,7 +23,7 @@ public:
 	virtual void finishInitialization() override;
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
-	virtual std::string readOSIMessage(const std::string& name) override;
+	virtual int readOSIMessage(const std::string& name, std::string& message) override;
 	virtual int doStep(double stepSize) override;
 	virtual void close() override;
 	void setInitialParameter(const std::string& name, const std::string& value) override;

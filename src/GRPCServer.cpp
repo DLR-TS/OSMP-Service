@@ -99,9 +99,10 @@ std::string GRPCServer::saveFile(const CoSiMa::rpc::OSMPConfig* config, GRPCServ
 }
 
 grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
-	response->set_value(
-		serviceInterface->readOSIMessage(request->value()));
-	return grpc::Status::OK;
+	std::string message;
+	int status = serviceInterface->readOSIMessage(request->value(), message);
+	response->set_value(message);
+	return status == 0 ? grpc::Status::OK : grpc::Status::CANCELLED;
 }
 
 grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {

@@ -34,13 +34,15 @@ int Playback::writeOSIMessage(const std::string& name, const std::string& value)
 	return 0;
 }
 
-std::string Playback::readOSIMessage(const std::string& name) {
-	std::string message;
+int Playback::readOSIMessage(const std::string& name, std::string& message) {
+	int status = 1;
 	if (getMessageType(name) == eOSIMessage::TrafficUpdateMessage) {
-		createTrafficUpdateMessage().SerializeToString(&message);
+		osi3::TrafficUpdate trafficUpdate;
+		status = createTrafficUpdateMessage(trafficUpdate);
+		trafficUpdate.SerializeToString(&message);
 	}
 	//add more message types
-	return message;
+	return status;
 }
 
 int Playback::doStep(double stepSize) {
@@ -48,12 +50,17 @@ int Playback::doStep(double stepSize) {
 	return 0;
 }
 
-osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
-	osi3::TrafficUpdate trafficUpdate;
+int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
 	while (std::stoull(currentLine[0]) - timeOffsetMicros <= simulationTimeMicros) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(currentLine, movingObject);
 		currentLine = parseNextLine();
+		if (currentLine.size() == 0) {
+			if (verbose) {
+				std::cout << "Reach end of file." << std::endl;
+			}
+			return 1;
+		}
 	}
 
 	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)simulationTimeMicros / 1000000);
@@ -61,7 +68,7 @@ osi3::TrafficUpdate Playback::createTrafficUpdateMessage() {
 	if (verbose) {
 		std::cout << "Send Traffic Update with " << trafficUpdate.update_size() << " updates." << std::endl;
 	}
-	return trafficUpdate;
+	return 0;
 }
 
 void Playback::createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject) {

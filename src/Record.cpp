@@ -28,13 +28,13 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 	return 0;
 }
 
-std::string Record::readOSIMessage(const std::string& name) {
+int Record::readOSIMessage(const std::string& name, std::string& message) {
 	std::cout << "Nothing to read from " << name << std::endl;
 	if (getMessageType(name) == eOSIMessage::SensorViewConfigurationMessage) {
 		osi3::SensorViewConfiguration c;
-		return c.SerializeAsString();
+		message = c.SerializeAsString();
 	}
-	return "";
+	return 0;
 }
 
 int Record::doStep(double stepSize) {
