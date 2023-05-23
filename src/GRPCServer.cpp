@@ -102,7 +102,7 @@ grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSi
 	std::string message;
 	int status = serviceInterface->readOSIMessage(request->value(), message);
 	response->set_value(message);
-	return status == 0 ? grpc::Status::OK : grpc::Status::CANCELLED;
+	return grpc::Status::OK;
 }
 
 grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
