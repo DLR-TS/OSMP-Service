@@ -10,11 +10,53 @@ void Playback::init(bool verbose, float starttime) {
 	//std::string expectedBeginning = "ts,id,h,w,l,class,vx,vy,vel,ax,ay,acc,heading,lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap,x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z";
 
 	currentLine = parseNextLine();
-	if (currentLine.size() >= 2 && currentLine[0] == "ts" && currentLine[1] == "id") {
-		currentLine = parseNextLine();
+	for (uint8_t index = 0; index < currentLine.size(); index++) {
+		if (currentLine[index] == "ts") {
+			indexTS = index;
+		}
+		else if (currentLine[index] == "id") {
+			indexID = index;
+		}
+		else if (currentLine[index] == "h") {
+			indexHeight = index;
+		}
+		else if (currentLine[index] == "w") {
+			indexWidth = index;
+		}
+		else if (currentLine[index] == "l") {
+			indexLength = index;
+		}
+		else if (currentLine[index] == "class") {
+			indexClass = index;
+		}
+		else if (currentLine[index] == "vx") {
+			indexVelocityX = index;
+		}
+		else if (currentLine[index] == "vy") {
+			indexVelocityY = index;
+		}
+		else if (currentLine[index] == "ay") {
+			indexAccelerationY = index;
+		}
+		else if (currentLine[index] == "ay") {
+			indexAccelerationY = index;
+		}
+		else if (currentLine[index] == "heading") {
+			indexOrientation = index;
+		}
+		else if (currentLine[index] == "x") {
+			indexPositionX = index;
+		}
+		else if (currentLine[index] == "y") {
+			indexPositionY = index;
+		}
+		else if (currentLine[index] == "z") {
+			indexPositionZ = index;
+		}
 	}
+	currentLine = parseNextLine();
 
-	timeOffsetMicros = std::stoull(currentLine[0]);
+	timeOffsetMicros = std::stoull(currentLine[indexTS]);
 }
 
 std::vector<std::string> Playback::parseNextLine() {
@@ -40,6 +82,10 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 		osi3::TrafficUpdate trafficUpdate;
 		status = createTrafficUpdateMessage(trafficUpdate);
 		trafficUpdate.SerializeToString(&message);
+
+		auto a = trafficUpdate.mutable_update();
+		osi3::MovingObject* b = new osi3::MovingObject();
+		a->AddAllocated(b);
 	}
 	//add more message types
 	return status;
@@ -51,7 +97,7 @@ int Playback::doStep(double stepSize) {
 }
 
 int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
-	while (std::stoull(currentLine[0]) - timeOffsetMicros <= simulationTimeMicros) {
+	while (std::stoull(currentLine[indexTS]) - timeOffsetMicros <= simulationTimeMicros) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(currentLine, movingObject);
 		currentLine = parseNextLine();
@@ -75,30 +121,30 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	//ts,id,h,w,l,class,vx,vy,vel,ax,ay,acc,heading,  (index 0-12)
 	//lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap, (index 13-20)
 	//x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z (index 21-35)
-	unsigned long long id = std::stoull(values[1]);
+	unsigned long long id = std::stoull(values[indexID]);
 	movingObject->mutable_id()->set_value((uint64_t)id);
 	osi3::BaseMoving* base = movingObject->mutable_base();
 
-	base->mutable_dimension()->set_height(std::stod(values[2]));
-	base->mutable_dimension()->set_width(std::stod(values[3]));
-	base->mutable_dimension()->set_length(std::stod(values[4]));
+	base->mutable_dimension()->set_height(std::stod(values[indexHeight]));
+	base->mutable_dimension()->set_width(std::stod(values[indexWidth]));
+	base->mutable_dimension()->set_length(std::stod(values[indexLength]));
 
-	if (values[5] == "passenger_car") {
+	if (values[indexClass] == "passenger_car") {
 		movingObject->mutable_vehicle_classification()->set_type(osi3::MovingObject::VehicleClassification::TYPE_MEDIUM_CAR);
 	}
-	else if (values[5] == "truck") {
+	else if (values[indexClass] == "truck") {
 		movingObject->mutable_vehicle_classification()->set_type(osi3::MovingObject::VehicleClassification::TYPE_HEAVY_TRUCK);
 	}
 
-	base->mutable_velocity()->set_x(std::stod(values[6]));
-	base->mutable_velocity()->set_y(std::stod(values[7]));
-	base->mutable_acceleration()->set_x(std::stod(values[9]));
-	base->mutable_acceleration()->set_y(std::stod(values[10]));
-	base->mutable_orientation()->set_yaw(std::stof(values[12]) * (M_PI / 180));
+	base->mutable_velocity()->set_x(std::stod(values[indexVelocityX]));
+	base->mutable_velocity()->set_y(std::stod(values[indexVelocityY]));
+	base->mutable_acceleration()->set_x(std::stod(values[indexAccelerationX]));
+	base->mutable_acceleration()->set_y(std::stod(values[indexAccelerationY]));
+	base->mutable_orientation()->set_yaw(std::stof(values[indexOrientation]) * (M_PI / 180));
 
-	base->mutable_position()->set_x(std::stof(values[33]));
-	base->mutable_position()->set_y(std::stof(values[34]));
-	base->mutable_position()->set_z(std::stof(values[35]));
+	base->mutable_position()->set_x(std::stof(values[indexPositionX]));
+	base->mutable_position()->set_y(std::stof(values[indexPositionY]));
+	base->mutable_position()->set_z(std::stof(values[indexPositionZ]));
 }
 
 void Playback::close() {

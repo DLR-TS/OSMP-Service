@@ -31,6 +31,21 @@ private:
 	std::vector<std::string> parseNextLine();
 	int createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate);
 	void createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject);
+
+	uint8_t indexTS;
+	uint8_t indexID;
+	uint8_t indexHeight;
+	uint8_t indexWidth;
+	uint8_t indexLength;
+	uint8_t indexClass;
+	uint8_t indexVelocityX;
+	uint8_t indexVelocityY;
+	uint8_t indexAccelerationX;
+	uint8_t indexAccelerationY;
+	uint8_t indexOrientation;
+	uint8_t indexPositionX;
+	uint8_t indexPositionY;
+	uint8_t indexPositionZ;
 };
 
 #endif // !PLAYBACK_H
