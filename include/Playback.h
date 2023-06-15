@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <queue>
 
 #include "ServiceInterface.h"
 #include "Utils.h"
@@ -29,7 +30,7 @@ private:
 	unsigned long long simulationTimeMicros;
 
 	std::vector<std::string> parseNextLine();
-	int createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate);
+	int addMovingObject(osi3::TrafficUpdate& trafficUpdate);
 	void createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject);
 
 	uint8_t indexTS;
@@ -46,6 +47,9 @@ private:
 	uint8_t indexPositionX;
 	uint8_t indexPositionY;
 	uint8_t indexPositionZ;
+
+	std::map<uint64_t, osi3::TrafficUpdate> tempTrafficUpdates;
+	std::queue<std::pair<uint64_t, osi3::TrafficUpdate>> trafficUpdates;
 };
 
 #endif // !PLAYBACK_H
