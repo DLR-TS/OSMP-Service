@@ -57,24 +57,6 @@ void Playback::init(bool verbose, float starttime) {
 	currentLine = parseNextLine();
 
 	timeOffsetMicros = std::stoull(currentLine[indexTS]);
-	while (currentLine.size()) {
-		osi3::TrafficUpdate trafficUpdate;
-		uint64_t timestamp = std::stoull(currentLine[indexTS]);
-		if (tempTrafficUpdates.find(timestamp) == tempTrafficUpdates.end()) {
-			trafficUpdate = tempTrafficUpdates.at(timestamp);
-		}
-		addMovingObject(trafficUpdate);
-		tempTrafficUpdates.emplace(timestamp, trafficUpdate);
-		currentLine = parseNextLine();
-		if (verbose) {
-			std::cout << "Reach end of file." << std::endl;
-		}
-	}
-
-	for (auto& trafficUpdate : tempTrafficUpdates) {
-		trafficUpdates.push(trafficUpdate);
-	}
-	tempTrafficUpdates.clear();
 }
 
 std::vector<std::string> Playback::parseNextLine() {
@@ -98,12 +80,7 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 	int status = 1;
 	if (getMessageType(name) == eOSIMessage::TrafficUpdateMessage) {
 		osi3::TrafficUpdate trafficUpdate;
-		while (trafficUpdates.front().first - timeOffsetMicros <= simulationTimeMicros) {
-			trafficUpdate = trafficUpdates.front().second;
-			trafficUpdates.pop();
-		}
-		trafficUpdate.mutable_timestamp()->set_seconds((int64_t)simulationTimeMicros / 1000000);
-		trafficUpdate.mutable_timestamp()->set_nanos((uint32_t)((simulationTimeMicros % 1000000) * 1000));
+		status = createTrafficUpdateMessage(trafficUpdate);
 		trafficUpdate.SerializeToString(&message);
 		status = 0;
 	}
@@ -116,9 +93,21 @@ int Playback::doStep(double stepSize) {
 	return 0;
 }
 
-int Playback::addMovingObject(osi3::TrafficUpdate& trafficUpdate) {
-	osi3::MovingObject* movingObject = trafficUpdate.add_update();
-	createMovingObject(currentLine, movingObject);
+int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
+	while (std::stoull(currentLine[indexTS]) - timeOffsetMicros <= simulationTimeMicros) {
+		osi3::MovingObject* movingObject = trafficUpdate.add_update();
+		createMovingObject(currentLine, movingObject);
+		currentLine = parseNextLine();
+		if (currentLine.size() == 0) {
+			if (verbose) {
+				std::cout << "Reach end of file." << std::endl;
+			}
+			return 1;
+		}
+	}
+
+	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)simulationTimeMicros / 1000000);
+	trafficUpdate.mutable_timestamp()->set_nanos((uint32_t)((simulationTimeMicros % 1000000) * 1000));
 	if (verbose) {
 		std::cout << "Traffic Update with " << trafficUpdate.update_size() << " vehicles." << std::endl;
 	}
