@@ -7,52 +7,68 @@ int Playback::create(const std::string& path) {
 
 void Playback::init(bool verbose, float starttime) {
 	this->verbose = verbose;
-	//std::string expectedBeginning = "ts,id,h,w,l,class,vx,vy,vel,ax,ay,acc,heading,lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap,x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z";
 
 	currentLine = parseNextLine();
 	for (uint8_t index = 0; index < currentLine.size(); index++) {
-		if (currentLine[index] == "ts") {
+		if (!currentLine[index].compare("ts")) {
 			indexTS = index;
 		}
-		else if (currentLine[index] == "id") {
+		else if (!currentLine[index].compare("id")) {
 			indexID = index;
 		}
-		else if (currentLine[index] == "h") {
+		else if (!currentLine[index].compare("h")) {
 			indexHeight = index;
 		}
-		else if (currentLine[index] == "w") {
+		else if (!currentLine[index].compare("w")) {
 			indexWidth = index;
 		}
-		else if (currentLine[index] == "l") {
+		else if (!currentLine[index].compare("l")) {
 			indexLength = index;
 		}
-		else if (currentLine[index] == "class") {
+		else if (!currentLine[index].compare("class")) {
 			indexClass = index;
 		}
-		else if (currentLine[index] == "vx") {
+		else if (!currentLine[index].compare("vx")) {
 			indexVelocityX = index;
 		}
-		else if (currentLine[index] == "vy") {
+		else if (!currentLine[index].compare("vy")) {
 			indexVelocityY = index;
 		}
-		else if (currentLine[index] == "ay") {
+		else if (!currentLine[index].compare("ax")) {
+			indexAccelerationX = index;
+		}
+		else if (!currentLine[index].compare("ay")) {
 			indexAccelerationY = index;
 		}
-		else if (currentLine[index] == "ay") {
-			indexAccelerationY = index;
-		}
-		else if (currentLine[index] == "heading") {
+		else if (!currentLine[index].compare("heading")) {
 			indexOrientation = index;
 		}
-		else if (currentLine[index] == "x") {
+		else if (!currentLine[index].compare("x")) {
 			indexPositionX = index;
 		}
-		else if (currentLine[index] == "y") {
+		else if (!currentLine[index].compare("y")) {
 			indexPositionY = index;
 		}
-		else if (currentLine[index] == "z") {
+		else if (!currentLine[index].compare("z")) {
 			indexPositionZ = index;
 		}
+	}
+	if (verbose) {
+		std::cout << "Configuration of indexes: "
+		<< "\ntimestamp: " << unsigned(indexTS)
+		<< "\nindex: " << unsigned(indexID)
+		<< "\nheight: " << unsigned(indexHeight)
+		<< "\nwidht: " << unsigned(indexWidth)
+		<< "\nlength: " << unsigned(indexLength)
+		<< "\nclass: " << unsigned(indexClass)
+		<< "\nvx: " << unsigned(indexVelocityX)
+		<< "\nvy: " << unsigned(indexVelocityY)
+		<< "\nax: " << unsigned(indexAccelerationX)
+		<< "\nay: " << unsigned(indexAccelerationY)
+		<< "\nheading: " << unsigned(indexOrientation)
+		<< "\npositionx: " << unsigned(indexPositionX)
+		<< "\npositiony: " << unsigned(indexPositionY)
+		<< "\npositionz: " << unsigned(indexPositionZ) << std::endl;
 	}
 	currentLine = parseNextLine();
 
