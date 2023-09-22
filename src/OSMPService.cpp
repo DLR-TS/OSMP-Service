@@ -9,12 +9,16 @@ int main(int argc, char *argv[])
 	std::string server_address = "0.0.0.0:51425";
 	bool verbose = false;
 	int divider = 1;
+	bool nano = false;
 
 	for (int i = 1; i < argc; i++) {
 		const std::string parameter = std::string(argv[i]);
 		if (parameter == "-v") {
 			verbose = true;
 			std::cout << "Verbose messages enabled." << std::endl;
+		}
+		else if (parameter == "-nano") {
+			nano = true;
 		}
 		else if (parameter == "-divide") {
 			divider = std::stoi(std::string(argv[++i]));
@@ -33,7 +37,7 @@ int main(int argc, char *argv[])
 
 	std::cout << "Server listens on: " << server_address << std::endl;
 
-	GRPCServer grpc(server_address, verbose, divider);
+	GRPCServer grpc(server_address, verbose, nano, divider);
 	grpc.startServer();
 
 	return 0;

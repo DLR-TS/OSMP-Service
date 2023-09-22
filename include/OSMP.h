@@ -19,7 +19,7 @@ class OSMP : public ServiceInterface
 {
 public:
 	virtual int create(const std::string& path) override;
-	virtual void init(bool verbose, float starttime = 0) override;
+	virtual void init(bool verbose, bool nano, float starttime = 0) override;
 	virtual void finishInitialization() override;
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;

@@ -24,7 +24,7 @@ int OSMP::create(const std::string& path) {
 	return 0;
 }
 
-void OSMP::init(bool verbose, float starttime) {
+void OSMP::init(bool verbose, bool nano, float starttime) {
 	this->verbose = verbose;
 	//Instance name cannot be set with FMU4cpp. The model identifier is used automatically instead
 	coSimSlave = coSimFMU->new_instance();

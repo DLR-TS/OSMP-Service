@@ -16,7 +16,7 @@
 
 class Playback : public ServiceInterface {
 	virtual int create(const std::string& path) override;
-	virtual void init(bool verbose, float starttime = 0) override;
+	virtual void init(bool verbose, bool nano, float starttime = 0) override;
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
 	virtual int readOSIMessage(const std::string& name, std::string& message) override;
@@ -26,7 +26,8 @@ private:
 	std::ifstream filestream;
 	std::vector<std::string> currentLine;
 	unsigned long long timeOffsetMicros;
-	unsigned long long simulationTimeMicros;
+	long simulationTimeMicros;
+	bool idIndexSet = false;
 
 	std::vector<std::string> parseNextLine();
 	int createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate);

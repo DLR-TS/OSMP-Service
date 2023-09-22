@@ -5,8 +5,9 @@ int Playback::create(const std::string& path) {
 	return 0;
 }
 
-void Playback::init(bool verbose, float starttime) {
+void Playback::init(bool verbose, bool nano, float starttime) {
 	this->verbose = verbose;
+	this->nano = nano;
 
 	currentLine = parseNextLine();
 	for (uint8_t index = 0; index < currentLine.size(); index++) {
@@ -15,6 +16,7 @@ void Playback::init(bool verbose, float starttime) {
 		}
 		else if (!currentLine[index].compare("id")) {
 			indexID = index;
+			idIndexSet = true;
 		}
 		else if (!currentLine[index].compare("h")) {
 			indexHeight = index;
@@ -72,7 +74,11 @@ void Playback::init(bool verbose, float starttime) {
 	}
 	currentLine = parseNextLine();
 
-	timeOffsetMicros = std::stoull(currentLine[indexTS]);
+	if (nano){
+		timeOffsetMicros = std::stoull(currentLine[indexTS]) / 1000;
+	} else {
+		timeOffsetMicros = std::stoull(currentLine[indexTS]);
+	}
 }
 
 std::vector<std::string> Playback::parseNextLine() {
@@ -110,7 +116,18 @@ int Playback::doStep(double stepSize) {
 }
 
 int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
-	while (std::stoull(currentLine[indexTS]) - timeOffsetMicros <= simulationTimeMicros) {
+	if (verbose) {
+		std::cout << "nano:" << nano << std::endl;
+		std::cout << "original:" << currentLine[indexTS] << std::endl;
+		std::cout << "variante 1" << std::stoull(currentLine[indexTS]) / 1000 << std::endl;
+		std::cout << "variante 2" << std::stoull(currentLine[indexTS]) << std::endl;
+		std::cout << "choose" << (long)((nano ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) << std::endl;
+		std::cout << "timeoffsetmicros: " << timeOffsetMicros << std::endl;
+		std::cout << "difference:" << ((long)((nano ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) << std::endl;
+		std::cout << "simulationtimemicros" << simulationTimeMicros << std::endl;
+		std::cout << "result:" << (((long)((nano ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) << std::endl;
+	}
+	while (((long)((nano ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(currentLine, movingObject);
 		currentLine = parseNextLine();
@@ -134,7 +151,12 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	//ts,id,h,w,l,class,vx,vy,vel,ax,ay,acc,heading,  (index 0-12)
 	//lane,reference_lane_distance,pos_in_lane,direction,leader_id,leader_speed,leader_pos,leader_gap, (index 13-20)
 	//x_fc,y_fc,x_fl,y_fl,x_fr,y_fr,x_rc,y_rc,x_rl,y_rl,x_rr,y_rr,x,y,z (index 21-35)
-	unsigned long long id = std::stoull(values[indexID]);
+	unsigned long long id = 0;
+	if (idIndexSet) {
+		id = std::stoull(values[indexID]);
+	} else {
+		id = 1337;
+	}
 	movingObject->mutable_id()->set_value((uint64_t)id);
 	osi3::BaseMoving* base = movingObject->mutable_base();
 

@@ -58,7 +58,7 @@ grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::r
 	}
 
 	int responsevalue = serviceInterface->create(filename);
-	serviceInterface->init(verbose);
+	serviceInterface->init(verbose, nano);
 
 	for (auto& initialparameter : config->parameter()) {
 		serviceInterface->setInitialParameter(initialparameter.name(), initialparameter.value());
@@ -112,7 +112,7 @@ grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSi
 }
 
 grpc::Status GRPCServer::DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) {
-	//divider default value: 1 
+	//divider default value: 1
 	if (divider <= doStepCounter) {
 		doStepCounter = 1;
 		if (verbose) {
