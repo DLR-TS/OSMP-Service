@@ -177,9 +177,9 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	base->mutable_acceleration()->set_y(std::stod(values[indexAccelerationY]));
 	base->mutable_orientation()->set_yaw(std::stof(values[indexOrientation]) * (M_PI / 180));
 
-	base->mutable_position()->set_x(std::stof(values[indexPositionX]));
-	base->mutable_position()->set_y(std::stof(values[indexPositionY]));
-	base->mutable_position()->set_z(std::stof(values[indexPositionZ]));
+	base->mutable_position()->set_x(std::stod(values[indexPositionX]));
+	base->mutable_position()->set_y(std::stod(values[indexPositionY]));
+	base->mutable_position()->set_z(std::stod(values[indexPositionZ]));
 }
 
 void Playback::close() {
