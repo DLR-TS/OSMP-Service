@@ -14,12 +14,13 @@
 #include "ServiceInterface.h"
 #include "Utils.h"
 #include "OSIMessages.h"
+#include "TimeUnits.h"
 
 class OSMP : public ServiceInterface
 {
 public:
 	virtual int create(const std::string& path) override;
-	virtual void init(bool verbose, bool nano, float starttime = 0) override;
+	virtual void init(bool verbose, OSMPTIMEUNIT timeunit, float starttime = 0) override;
 	virtual void finishInitialization() override;
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;

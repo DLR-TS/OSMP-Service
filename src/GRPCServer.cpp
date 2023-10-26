@@ -58,7 +58,7 @@ grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::r
 	}
 
 	int responsevalue = serviceInterface->create(filename);
-	serviceInterface->init(verbose, nano);
+	serviceInterface->init(verbose, timeunit);
 
 	for (auto& initialparameter : config->parameter()) {
 		serviceInterface->setInitialParameter(initialparameter.name(), initialparameter.value());

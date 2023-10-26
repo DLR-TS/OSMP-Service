@@ -33,11 +33,10 @@ private:
 	const std::chrono::milliseconds transaction_timeout;
 	const bool verbose;
 	const int divider;
+	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT::MICRO;
 
 	int doStepCounter = 1;
 
-	enum OSMPTIMEUNIT{MILLI, MICRO, NANO};
-	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT.MIRCO;
 	enum OSMPSERVICEMODE { FMU, PLAYBACK, RECORD };
 
 	const std::string FMUNAME = "OSMP-FMU.fmu";

@@ -4,7 +4,7 @@ int Record::create(const std::string& name) {
 	return 0;
 }
 
-void Record::init(bool verbose, bool nano, float starttime) {
+void Record::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 }
 
 int Record::writeOSIMessage(const std::string& name, const std::string& value) {

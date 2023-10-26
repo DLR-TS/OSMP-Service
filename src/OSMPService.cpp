@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	std::string server_address = "0.0.0.0:51425";
 	bool verbose = false;
 	int divider = 1;
-	OSMPTIMEUNIT nano = OSMPTIMEUNIT.MICRO;
+	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT::MICRO;
 
 	for (int i = 1; i < argc; i++) {
 		const std::string parameter = std::string(argv[i]);
@@ -18,13 +18,13 @@ int main(int argc, char *argv[])
 			std::cout << "Verbose messages enabled." << std::endl;
 		}
 		else if (parameter == "-nano") {
-			timeunit = OSMPTIMEUNIT.NANO;
+			timeunit = OSMPTIMEUNIT::NANO;
 		}
 		else if (parameter == "-micro") {
-			timeunit = OSMPTIMEUNIT.MICRO;
+			timeunit = OSMPTIMEUNIT::MICRO;
 		}
 		else if (parameter == "-milli") {
-			timeunit = OSMPTIMEUNIT.MILLI;
+			timeunit = OSMPTIMEUNIT::MILLI;
 		}
 		else if (parameter == "-divide") {
 			divider = std::stoi(std::string(argv[++i]));

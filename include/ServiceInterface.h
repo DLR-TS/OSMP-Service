@@ -6,14 +6,14 @@
 #define SERVICEINTERFACE_H
 
 #include <string>
-
+#include "TimeUnits.h"
 #include "OSIMessages.h"
 
 class ServiceInterface
 {
 public:
 	virtual int create(const std::string& path) = 0;
-	virtual void init(bool verbose, bool nano, float starttime = 0) = 0;
+	virtual void init(bool verbose, OSMPTIMEUNIT timeunit, float starttime = 0) = 0;
 	virtual void finishInitialization() {};
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) = 0;
@@ -25,7 +25,7 @@ public:
 
 protected:
 	bool verbose = false;
-	bool nano = false;
+	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT::MICRO;
 };
 
 #endif // !SERVICEINTERFACE_H

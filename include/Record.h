@@ -13,7 +13,7 @@
 
 class Record : public ServiceInterface {
 	virtual int create(const std::string& path) override;
-	virtual void init(bool verbose, bool nano, float starttime = 0) override;
+	virtual void init(bool verbose, OSMPTIMEUNIT timeunit, float starttime = 0) override;
 
 	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
 	virtual int readOSIMessage(const std::string& name, std::string& message) override;
