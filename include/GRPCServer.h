@@ -32,10 +32,12 @@ private:
 	const std::string server_address;
 	const std::chrono::milliseconds transaction_timeout;
 	const bool verbose;
-	const bool nano;
 	const int divider;
+
 	int doStepCounter = 1;
 
+	enum OSMPTIMEUNIT{MILLI, MICRO, NANO};
+	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT.MIRCO;
 	enum OSMPSERVICEMODE { FMU, PLAYBACK, RECORD };
 
 	const std::string FMUNAME = "OSMP-FMU.fmu";
@@ -50,7 +52,7 @@ private:
 	std::string saveFile(const CoSiMa::rpc::OSMPConfig* config, OSMPSERVICEMODE mode);
 
 public:
-	GRPCServer(std::string server_address, bool verbose, bool nano, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), nano(nano), transaction_timeout(std::chrono::milliseconds(5000)) {};
+	GRPCServer(std::string server_address, bool verbose, OSMPTIMEUNIT timeunit, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), timeunit(timeunit), transaction_timeout(std::chrono::milliseconds(5000)) {};
 	void startServer(const bool nonBlocking = false);
 	void stopServer();
 

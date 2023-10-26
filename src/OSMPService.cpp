@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	std::string server_address = "0.0.0.0:51425";
 	bool verbose = false;
 	int divider = 1;
-	bool nano = false;
+	OSMPTIMEUNIT nano = OSMPTIMEUNIT.MICRO;
 
 	for (int i = 1; i < argc; i++) {
 		const std::string parameter = std::string(argv[i]);
@@ -18,7 +18,13 @@ int main(int argc, char *argv[])
 			std::cout << "Verbose messages enabled." << std::endl;
 		}
 		else if (parameter == "-nano") {
-			nano = true;
+			timeunit = OSMPTIMEUNIT.NANO;
+		}
+		else if (parameter == "-micro") {
+			timeunit = OSMPTIMEUNIT.MICRO;
+		}
+		else if (parameter == "-milli") {
+			timeunit = OSMPTIMEUNIT.MILLI;
 		}
 		else if (parameter == "-divide") {
 			divider = std::stoi(std::string(argv[++i]));
@@ -37,7 +43,7 @@ int main(int argc, char *argv[])
 
 	std::cout << "Server listens on: " << server_address << std::endl;
 
-	GRPCServer grpc(server_address, verbose, nano, divider);
+	GRPCServer grpc(server_address, verbose, timeunit, divider);
 	grpc.startServer();
 
 	return 0;
