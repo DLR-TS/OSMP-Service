@@ -7,7 +7,6 @@ int Playback::create(const std::string& path) {
 
 void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 	this->verbose = verbose;
-	this->timeunit = timeunit;
 
 	currentLine = parseNextLine();
 	for (uint8_t index = 0; index < currentLine.size(); index++) {
@@ -74,11 +73,7 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 	}
 	currentLine = parseNextLine();
 
-	if (timeunit == OSMPTIMEUNIT::NANO){
-		timeOffsetMicros = std::stoull(currentLine[indexTS]) / 1000;
-	} else {
-		timeOffsetMicros = std::stoull(currentLine[indexTS]);
-	}
+	timeOffsetMicros = determineTimeOffset(timeunit, currentLine[indexTS]);
 }
 
 std::vector<std::string> Playback::parseNextLine() {
@@ -92,6 +87,39 @@ std::vector<std::string> Playback::parseNextLine() {
 		parsed.push_back(cell);
 	}
 	return parsed;
+}
+
+unsigned long long Playback::determineTimeOffset(OSMPTIMEUNIT& timeunit, std::string& timestamp) {
+	unsigned long long time = std::stoull(currentLine[indexTS]);
+	unsigned long long timeOffset; //in microseconds
+
+	if (timeunit == OSMPTIMEUNIT::UNSPECIFIED) {
+		std::cout << "Attention! The timestamp unit will be definied automatically!" << std::endl;
+		if (time >= 1600000000000000000u) { //September 2020 in nanoseconds
+			timeunit = OSMPTIMEUNIT::NANO;
+			std::cout << "Using nanoseconds as interpretation of timestamp.";
+		} else if (time >= 1600000000000000u){ //September 2020 in microseconds
+			timeunit = OSMPTIMEUNIT::MICRO;
+			std::cout << "Using microseconds as interpretation of timestamp.";
+		} else {
+			timeunit = OSMPTIMEUNIT::MILLI;
+			std::cout << "Using milliseconds as interpretation of timestamp.";
+		}
+		std::cout << " You can provide a timestamp interpretation by runtimeparameter." << std::endl;
+	}
+
+	switch(timeunit) {
+	case OSMPTIMEUNIT::NANO:
+		timeOffset = time / 1000;
+		break;
+	case  OSMPTIMEUNIT::MICRO:
+		timeOffset = time;
+		break;
+	case OSMPTIMEUNIT::MILLI:
+		timeOffset = time * 1000;
+		break;
+	}
+	return timeOffset;
 }
 
 int Playback::writeOSIMessage(const std::string& name, const std::string& value) {

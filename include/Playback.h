@@ -32,6 +32,7 @@ private:
 	std::vector<std::string> parseNextLine();
 	int createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate);
 	void createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject);
+	unsigned long long determineTimeOffset(OSMPTIMEUNIT& timeunit, std::string& timestamp);
 
 	uint8_t indexTS;
 	uint8_t indexID;

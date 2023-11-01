@@ -33,7 +33,7 @@ private:
 	const std::chrono::milliseconds transaction_timeout;
 	const bool verbose;
 	const int divider;
-	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT::MICRO;
+	OSMPTIMEUNIT timeunit;
 
 	int doStepCounter = 1;
 

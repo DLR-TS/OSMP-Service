@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	std::string server_address = "0.0.0.0:51425";
 	bool verbose = false;
 	int divider = 1;
-	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT::MICRO;
+	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT::UNSPECIFIED;
 
 	for (int i = 1; i < argc; i++) {
 		const std::string parameter = std::string(argv[i]);
