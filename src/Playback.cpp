@@ -10,48 +10,57 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 
 	currentLine = parseNextLine();
 	for (uint8_t index = 0; index < currentLine.size(); index++) {
-		if (!currentLine[index].compare("ts")) {
+ 
+		//fix for csv generated on windows with \r\n at the end of line
+		//std::string::rfind(name, 0) == 0
+		//instead of
+		//!std::string::compare(name)
+ 
+		if (currentLine[index].rfind("ts", 0) == 0) {
 			indexTS = index;
 		}
-		else if (!currentLine[index].compare("id")) {
+		else if (currentLine[index].rfind("id", 0) == 0) {
 			indexID = index;
 			idIndexSet = true;
 		}
-		else if (!currentLine[index].compare("h")) {
+		else if (currentLine[index].compare("h") == 0) {
 			indexHeight = index;
 		}
-		else if (!currentLine[index].compare("w")) {
+		else if (currentLine[index].rfind("w", 0) == 0) {
 			indexWidth = index;
 		}
-		else if (!currentLine[index].compare("l")) {
+		else if (currentLine[index].rfind("l", 0) == 0) {
 			indexLength = index;
 		}
-		else if (!currentLine[index].compare("class")) {
+		else if (currentLine[index].rfind("class", 0) == 0) {
 			indexClass = index;
 		}
-		else if (!currentLine[index].compare("vx")) {
+		else if (currentLine[index].rfind("vx", 0) == 0) {
 			indexVelocityX = index;
 		}
-		else if (!currentLine[index].compare("vy")) {
+		else if (currentLine[index].rfind("vy", 0) == 0) {
 			indexVelocityY = index;
 		}
-		else if (!currentLine[index].compare("ax")) {
+		else if (currentLine[index].rfind("ax", 0) == 0) {
 			indexAccelerationX = index;
 		}
-		else if (!currentLine[index].compare("ay")) {
+		else if (currentLine[index].rfind("ay", 0) == 0) {
 			indexAccelerationY = index;
 		}
-		else if (!currentLine[index].compare("heading")) {
+		else if (currentLine[index].rfind("heading", 0) == 0) {
 			indexOrientation = index;
 		}
-		else if (!currentLine[index].compare("x")) {
+		else if (currentLine[index].rfind("x", 0) == 0) {
 			indexPositionX = index;
 		}
-		else if (!currentLine[index].compare("y")) {
+		else if (currentLine[index].rfind("y", 0) == 0) {
 			indexPositionY = index;
 		}
-		else if (!currentLine[index].compare("z")) {
+		else if (currentLine[index].rfind("z", 0) == 0) {
 			indexPositionZ = index;
+		}
+		else if (currentLine[index].rfind("model_reference", 0) == 0) {
+			indexModelReference = index;
 		}
 	}
 	if (verbose) {
@@ -69,7 +78,8 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 		<< "\nheading: " << unsigned(indexOrientation)
 		<< "\npositionx: " << unsigned(indexPositionX)
 		<< "\npositiony: " << unsigned(indexPositionY)
-		<< "\npositionz: " << unsigned(indexPositionZ) << std::endl;
+		<< "\npositiony: " << unsigned(indexPositionZ)
+		<< "\nmodel_reference: " << unsigned(indexModelReference) << std::endl;
 	}
 	currentLine = parseNextLine();
 
@@ -132,7 +142,6 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 		osi3::TrafficUpdate trafficUpdate;
 		status = createTrafficUpdateMessage(trafficUpdate);
 		trafficUpdate.SerializeToString(&message);
-		status = 0;
 	}
 	//add more message types
 	return status;
@@ -152,7 +161,7 @@ int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
 		std::cout << "choose" << (long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) << std::endl;
 		std::cout << "timeoffsetmicros: " << timeOffsetMicros << std::endl;
 		std::cout << "difference:" << ((long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) << std::endl;
-		std::cout << "simulationtimemicros" << simulationTimeMicros << std::endl;
+		std::cout << "simulationtimemicros: " << simulationTimeMicros << std::endl;
 		std::cout << "result:" << (((long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) << std::endl;
 	}
 	while (((long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) {
@@ -185,7 +194,9 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	} else {
 		id = 1337;
 	}
+
 	movingObject->mutable_id()->set_value((uint64_t)id);
+	movingObject->set_model_reference(values[indexModelReference]);
 	osi3::BaseMoving* base = movingObject->mutable_base();
 
 	base->mutable_dimension()->set_height(std::stod(values[indexHeight]));

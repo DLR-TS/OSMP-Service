@@ -48,6 +48,7 @@ private:
 	uint8_t indexPositionX;
 	uint8_t indexPositionY;
 	uint8_t indexPositionZ;
+  uint8_t indexModelReference;
 };
 
 #endif // !PLAYBACK_H
