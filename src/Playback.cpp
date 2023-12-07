@@ -10,12 +10,12 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 
 	currentLine = parseNextLine();
 	for (uint8_t index = 0; index < currentLine.size(); index++) {
- 
+
 		//fix for csv generated on windows with \r\n at the end of line
 		//std::string::rfind(name, 0) == 0
 		//instead of
 		//!std::string::compare(name)
- 
+
 		if (currentLine[index].rfind("ts", 0) == 0) {
 			indexTS = index;
 		}
@@ -23,7 +23,7 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 			indexID = index;
 			idIndexSet = true;
 		}
-		else if (currentLine[index].compare("h") == 0) {
+		else if (currentLine[index].compare("h") == 0) {//explicit compare because of "heading"
 			indexHeight = index;
 		}
 		else if (currentLine[index].rfind("w", 0) == 0) {
@@ -196,7 +196,11 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	}
 
 	movingObject->mutable_id()->set_value((uint64_t)id);
-	movingObject->set_model_reference(values[indexModelReference]);
+	std::string model_ref = values[indexModelReference];
+	if (!model_ref.empty() && model_ref[model_ref.size() - 1] == '\r') {
+		model_ref.erase(model_ref.size() - 1);
+	}
+	movingObject->set_model_reference(model_ref);
 	osi3::BaseMoving* base = movingObject->mutable_base();
 
 	base->mutable_dimension()->set_height(std::stod(values[indexHeight]));
