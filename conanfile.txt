@@ -11,14 +11,13 @@ bzip2/1.0.8
 zlib/1.2.12
 
 [generators]
-cmake
-cmake_paths
-cmake_find_package
+CMakeToolchain
+CMakeDeps1
 
 [options]
-libzip:crypto=False
-libzip:with_lzma=False
-libzip:with_zstd=False
+libzip/*:crypto=False
+libzip/*:with_lzma=False
+libzip/*:with_zstd=False
 
 [imports]
 bin, *.dll -> ./bin
