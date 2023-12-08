@@ -12,7 +12,7 @@ zlib/1.2.12
 
 [generators]
 CMakeToolchain
-CMakeDeps1
+CMakeDeps
 
 [options]
 libzip/*:crypto=False
@@ -21,3 +21,6 @@ libzip/*:with_zstd=False
 
 [imports]
 bin, *.dll -> ./bin
+
+[layout]
+cmake_layout
