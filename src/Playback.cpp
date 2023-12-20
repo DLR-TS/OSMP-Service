@@ -88,10 +88,18 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 
 std::vector<std::string> Playback::parseNextLine() {
 	std::string line;
+	std::vector<std::string> parsed;
+
+	if (filestream.eof()) {
+		return parsed;
+	}
 	std::getline(filestream, line);
+	    if (filestream.fail()) {
+		return parsed;
+	}
 	std::stringstream lineStream(line);
 	std::string cell;
-	std::vector<std::string> parsed;
+
 	while (std::getline(lineStream, cell, ','))
 	{
 		parsed.push_back(cell);
@@ -148,11 +156,22 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 }
 
 int Playback::doStep(double stepSize) {
+	if (firstDoStep) {
+		firstDoStep = false;
+		return 0;
+	}
 	simulationTimeMicros += (unsigned long long)(stepSize * 1000000);
 	return 0;
 }
 
 int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
+	if (currentLine.size() == 0) {
+		if (verbose) {
+			std::cout << "Reach end of file." << std::endl;
+		}
+		return 1;
+	}
+
 	if (verbose) {
 		std::cout << "timeunit:" << timeunit << std::endl;
 		std::cout << "original:" << currentLine[indexTS] << std::endl;
@@ -164,16 +183,10 @@ int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
 		std::cout << "simulationtimemicros: " << simulationTimeMicros << std::endl;
 		std::cout << "result:" << (((long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) << std::endl;
 	}
-	while (((long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) {
+	while (lineInTimestep()) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(currentLine, movingObject);
 		currentLine = parseNextLine();
-		if (currentLine.size() == 0) {
-			if (verbose) {
-				std::cout << "Reach end of file." << std::endl;
-			}
-			return 1;
-		}
 	}
 
 	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)simulationTimeMicros / 1000000);
@@ -182,6 +195,30 @@ int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
 		std::cout << "Traffic Update with " << trafficUpdate.update_size() << " vehicles." << std::endl;
 	}
 	return 0;
+}
+
+bool Playback::lineInTimestep() {
+	if (currentLine.size() == 0) {
+		return false;
+	}
+	unsigned long long ts;
+	switch (timeunit) {
+		case OSMPTIMEUNIT::NANO:
+			ts = std::stoull(currentLine[indexTS]) / 1000l;
+		break;
+		case OSMPTIMEUNIT::MICRO:
+			ts = std::stoull(currentLine[indexTS]);
+		break;
+		case OSMPTIMEUNIT::MILLI:
+			ts = std::stoull(currentLine[indexTS]) * 1000l;
+		break;
+	}
+	unsigned long long simulationTs = ts - timeOffsetMicros;
+	if (simulationTs <= simulationTimeMicros) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void Playback::createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject) {

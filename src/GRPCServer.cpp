@@ -13,16 +13,22 @@ void GRPCServer::startServer(const bool nonBlocking)
 	builder.SetMaxReceiveMessageSize(-1);
 	builder.SetMaxSendMessageSize(-1);
 	server = builder.BuildAndStart();
+
+	std::thread serverStopper([this]() {this->stopServer();});
 	if (!nonBlocking) {
 		server->Wait();
 	}
 	else {
 		server_thread = std::make_unique<std::thread>(&grpc::Server::Wait, server);
 	}
+	serverStopper.join();
 }
 
 void GRPCServer::stopServer()
 {
+	while(!serverStop.load(std::memory_order_relaxed)) {
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
 	if (server)
 		server->Shutdown(std::chrono::system_clock::now() + transaction_timeout);
 	if (server_thread)
@@ -102,7 +108,12 @@ grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSi
 	std::string message;
 	int status = serviceInterface->readOSIMessage(request->value(), message);
 	response->set_value(message);
-	return grpc::Status::OK;
+	if (status == 0) {
+		return grpc::Status::OK;
+	} else {
+		serverStop.store(true, std::memory_order_relaxed);
+		return grpc::Status::CANCELLED;
+	}
 }
 
 grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {

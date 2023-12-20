@@ -1,5 +1,5 @@
 /**
-@authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
+@authors German Aerospace Center: Nils Wendorff, BjÃ¶rn Bahn, Danny Behnecke
 */
 
 #ifndef GRPCSERVER_H
@@ -8,6 +8,7 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
+#include <thread>
 
 #include <grpc/grpc.h>
 #include <grpcpp/server.h>
@@ -44,6 +45,7 @@ private:
 
 	std::shared_ptr<grpc::Server> server;
 	std::unique_ptr<std::thread> server_thread;
+	std::atomic<bool> serverStop{false};
 
 	std::unique_ptr<ServiceInterface> serviceInterface;
 

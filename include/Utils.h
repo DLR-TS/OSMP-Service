@@ -1,5 +1,5 @@
 /**
-@authors German Aerospace Center: Björn Bahn
+@authors German Aerospace Center: BjÃ¶rn Bahn
 */
 
 #ifndef UTILS_H
