@@ -153,4 +153,8 @@ include(Catch)
 catch_discover_tests(test_OSMPService)
 
 add_executable (OSMPService "${CMAKE_CURRENT_LIST_DIR}/src/OSMPService.cpp" "${CMAKE_CURRENT_LIST_DIR}/include/OSMPService.h")
+if (${CMAKE_CXX_STANDARD} LESS 17)
 target_link_libraries(OSMPService PUBLIC OSMPServiceLib stdc++fs)
+else()
+target_link_libraries(OSMPService PUBLIC OSMPServiceLib)
+endif()
