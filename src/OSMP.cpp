@@ -65,10 +65,10 @@ void OSMP::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 
 void OSMP::setInitialParameter(const std::string& name, const std::string& value) {
 	if (verbose) {
-		std::cout << "Set intial parameter: " << name << " to " << value << std::endl;
+		std::cout << "Set initial parameter: " << name << " to " << value << std::endl;
 	}
 	for (auto const& var : *(modelDescription->model_variables)) {
-		if (var.causality == fmi4cpp::fmi2::causality::parameter && var.name != name) {
+		if (var.causality != fmi4cpp::fmi2::causality::parameter || var.name != name) {
 			continue;
 		}
 		if (var.is_boolean()) {
