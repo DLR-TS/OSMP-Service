@@ -15,6 +15,5 @@ RUN cmake .. -DCMAKE_CXX_STANDARD=14 -DBUILD_SHARED_LIBS=false -DCMAKE_BUILD_TYP
 RUN cmake --build . --target OSMPService
 
 FROM ubuntu:18.04
-RUN apt-get update && apt-get install -y libprotobuf10 && rm -rf /var/lib/apt/lists/*
 COPY --from=osmp_builder /osmpservice/build/bin/OSMPService .
 ENTRYPOINT ./OSMPService
