@@ -57,13 +57,18 @@ void Record::saveImage(const osi3::SensorView& sensorView, const std::string& na
 
 		auto rgbView = boost::gil::interleaved_view(imageWidth, imageHeight, pixels.data(), imageWidth * sizeof(boost::gil::rgb8_pixel_t));
 
-		boost::gil::write_view("SensorView_" + name + "_" + formatTimeToMS(sensorView.timestamp()) +  ".png", rgbView, boost::gil::png_tag());
+		std::string fileName("SensorView_" + name + "_" + formatTimeToMS(sensorView.timestamp()) + ".png");
+
+		if (writeThread.joinable()) {
+			writeThread.join();
+		}
+		writeThread = std::thread(writeImage, fileName, rgbView);
 	}
 }
 
 std::string Record::formatTimeToMS(const osi3::Timestamp& timestamp) {
 	std::chrono::milliseconds timeMilliseconds(timestamp.seconds() * 1000LL + timestamp.nanos() / 1000000);
-	return std::to_string(timeMilliseconds.count()) + " ms";
+	return std::to_string(timeMilliseconds.count()) + "ms";
 }
 
 int Record::readOSIMessage(const std::string& name, std::string& message) {
@@ -80,10 +85,17 @@ int Record::doStep(double stepSize) {
 }
 
 void Record::close() {
+	if (writeThread.joinable()) {
+		writeThread.join();
+	}
 	for (auto& file : output) {
 		file.second->close();
 		delete file.second;
 		file.second = 0;
 	}
 	output.clear();
+}
+
+void writeImage(const std::string fileName, const boost::gil::rgb8_view_t rgbView) {
+	boost::gil::write_view(fileName, rgbView, boost::gil::png_tag());
 }

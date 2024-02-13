@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <map>
+#include <thread>
 #include <boost/gil.hpp>
 #include <boost/gil/io/write_view.hpp>
 #include <boost/gil/extension/io/png.hpp>
@@ -24,9 +25,12 @@ class Record : public ServiceInterface {
 	virtual void close() override;
 private:
 	std::map<std::string, std::ofstream*> output;
+	std::thread writeThread;
 
 	void saveImage(const osi3::SensorView& sensorView, const std::string& name);
 	std::string formatTimeToMS(const osi3::Timestamp& timestamp);
 };
+
+void writeImage(const std::string fileName, const boost::gil::rgb8_view_t rgbView);
 
 #endif // !RECORD_H
