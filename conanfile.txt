@@ -1,6 +1,6 @@
 [requires]
 protobuf/3.21.9
-# requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.31.0/BUILDING.md#windows)
+# requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.51.1/BUILDING.md#windows)
 nasm/2.15.05
 catch2/2.13.9
 fakeit/2.3.0
@@ -9,6 +9,7 @@ boost/1.80.0
 libzip/1.8.0
 bzip2/1.0.8
 zlib/1.2.12
+libpng/1.6.37
 
 [generators]
 cmake

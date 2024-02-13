@@ -34,7 +34,7 @@ endif()
 # Download automatically, you can also just copy the conan.cmake file
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-   file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
+   file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/0.18.1/conan.cmake"
                  "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
@@ -50,6 +50,9 @@ include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 # needed by cmake_find_package conan generator, but breaks protobuf
 #include(${CMAKE_CURRENT_BINARY_DIR}/conan_paths.cmake)
 conan_basic_setup()
+
+find_package(PNG REQUIRED)
+find_package(Boost 1.80.0 REQUIRED)
 
 # Somehow, sometimes the conan package's protoc binary is not found by the default find script, so help hinting it:
 find_program(Protobuf_PROTOC_EXECUTABLE
@@ -108,6 +111,11 @@ else()
 	target_link_libraries(OSMPServiceLib PUBLIC open_simulation_interface_static)
 endif(BUILD_SHARED_LIBS)
 
+include_directories(OSMPServiceLib PUBLIC ${Boost_INCLUDE_DIRS})
+include_directories(OSMPServiceLib PUBLIC ${PNG_INCLUDE_DIRS})
+
+target_link_libraries(OSMPServiceLib PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(OSMPServiceLib PUBLIC ${PNG_LIBRARIES})
 
 ## generate grpc code
 # custom grcp cpp code generation script that is easier to use than gRPC's default function

@@ -15,17 +15,51 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 
 	auto file = output.find(name);
 	if (file == output.end()) {
+		//create ofstream, if not yet done.
 		std::ofstream* logFile = new std::ofstream(name + ".osi", std::ofstream::binary);
 		output.emplace(name, logFile);
 		file = output.find(name);
 	}
 	std::ofstream* stream = file->second;
 
-	uint32_t size = value.size();
+	uint32_t size = (uint32_t)value.size();
 	//format: size as long, message
 	stream->write((char*)&size, sizeof(size));
 	*stream << value << std::flush;
+
+	if (name.find("SensorView") != std::string::npos) {
+		saveImage(value);
+	}
 	return 0;
+}
+
+void Record::saveImage(const std::string& value) {
+	osi3::SensorView sensorView;
+	sensorView.ParseFromString(value);
+
+	for (auto& cameraSensorView : sensorView.camera_sensor_view()) {
+		if (!cameraSensorView.has_view_configuration()) {
+			std::cerr << "No OSI3::CameraSensorViewConfiguration given for image!" << std::endl;
+			continue;
+		}
+		osi3::CameraSensorViewConfiguration camConfig = cameraSensorView.view_configuration();
+		std::string imageData = cameraSensorView.image_data();
+
+		int imageWidth = camConfig.number_of_pixels_horizontal();
+		int imageHeight = camConfig.number_of_pixels_vertical();
+
+		std::vector <boost::gil::rgb8_pixel_t> pixels;
+		pixels.reserve(imageWidth * imageHeight);
+
+		for (size_t i = 0; i < imageData.size(); i += 3) {
+			boost::gil::rgb8_pixel_t pixel(imageData[i], imageData[i + 1], imageData[i + 2]);
+			pixels.push_back(pixel);
+		}
+
+		auto rgbView = boost::gil::interleaved_view(imageWidth, imageHeight, pixels.data(), imageWidth * sizeof(boost::gil::rgb8_pixel_t));
+
+		boost::gil::write_view("Image" + std::to_string(rand()) +  ".png", rgbView, boost::gil::png_tag());
+	}
 }
 
 int Record::readOSIMessage(const std::string& name, std::string& message) {

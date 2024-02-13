@@ -7,6 +7,9 @@
 
 #include <fstream>
 #include <map>
+#include <boost/gil.hpp>
+#include <boost/gil/io/write_view.hpp>
+#include <boost/gil/extension/io/png.hpp>
 
 #include "Utils.h"
 #include "ServiceInterface.h"
@@ -21,6 +24,8 @@ class Record : public ServiceInterface {
 	virtual void close() override;
 private:
 	std::map<std::string, std::ofstream*> output;
+
+	void saveImage(const std::string& value);
 };
 
 #endif // !RECORD_H
