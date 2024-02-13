@@ -27,10 +27,8 @@ private:
 	std::map<std::string, std::ofstream*> output;
 	std::thread writeThread;
 
-	void saveImage(const osi3::SensorView& sensorView, const std::string& name);
+	void saveImage(const osi3::SensorView sensorView, const std::string name);
 	std::string formatTimeToMS(const osi3::Timestamp& timestamp);
 };
-
-void writeImage(const std::string fileName, const boost::gil::rgb8_view_t rgbView);
 
 #endif // !RECORD_H

@@ -29,13 +29,15 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 
 	osi3::SensorView sensorView;
 	if (sensorView.ParseFromString(value)) {
-		saveImage(sensorView, name);
+		if (writeThread.joinable()) {
+			writeThread.join();
+		}
+		writeThread = std::thread(&Record::saveImage, this, sensorView, name);
 	}
 	return 0;
 }
 
-void Record::saveImage(const osi3::SensorView& sensorView, const std::string& name) {
-
+void Record::saveImage(const osi3::SensorView sensorView, const std::string name) {
 	for (auto& cameraSensorView : sensorView.camera_sensor_view()) {
 		if (!cameraSensorView.has_view_configuration()) {
 			std::cerr << "No OSI3::CameraSensorViewConfiguration given for image!" << std::endl;
@@ -59,10 +61,7 @@ void Record::saveImage(const osi3::SensorView& sensorView, const std::string& na
 
 		std::string fileName("SensorView_" + name + "_" + formatTimeToMS(sensorView.timestamp()) + ".png");
 
-		if (writeThread.joinable()) {
-			writeThread.join();
-		}
-		writeThread = std::thread(writeImage, fileName, rgbView);
+		boost::gil::write_view(fileName, rgbView, boost::gil::png_tag());
 	}
 }
 
@@ -94,8 +93,4 @@ void Record::close() {
 		file.second = 0;
 	}
 	output.clear();
-}
-
-void writeImage(const std::string fileName, const boost::gil::rgb8_view_t rgbView) {
-	boost::gil::write_view(fileName, rgbView, boost::gil::png_tag());
 }
