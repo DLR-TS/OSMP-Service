@@ -25,7 +25,8 @@ class Record : public ServiceInterface {
 private:
 	std::map<std::string, std::ofstream*> output;
 
-	void saveImage(const std::string& value);
+	void saveImage(const osi3::SensorView& sensorView, const std::string& name);
+	std::string formatTimeToMS(const osi3::Timestamp& timestamp);
 };
 
 #endif // !RECORD_H

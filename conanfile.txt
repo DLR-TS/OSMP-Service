@@ -9,7 +9,7 @@ boost/1.80.0
 libzip/1.8.0
 bzip2/1.0.8
 zlib/1.2.12
-libpng/1.6.37
+libpng/1.6.40
 
 [generators]
 cmake

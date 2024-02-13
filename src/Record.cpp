@@ -27,15 +27,14 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 	stream->write((char*)&size, sizeof(size));
 	*stream << value << std::flush;
 
-	if (name.find("SensorView") != std::string::npos) {
-		saveImage(value);
+	osi3::SensorView sensorView;
+	if (sensorView.ParseFromString(value)) {
+		saveImage(sensorView, name);
 	}
 	return 0;
 }
 
-void Record::saveImage(const std::string& value) {
-	osi3::SensorView sensorView;
-	sensorView.ParseFromString(value);
+void Record::saveImage(const osi3::SensorView& sensorView, const std::string& name) {
 
 	for (auto& cameraSensorView : sensorView.camera_sensor_view()) {
 		if (!cameraSensorView.has_view_configuration()) {
@@ -58,8 +57,13 @@ void Record::saveImage(const std::string& value) {
 
 		auto rgbView = boost::gil::interleaved_view(imageWidth, imageHeight, pixels.data(), imageWidth * sizeof(boost::gil::rgb8_pixel_t));
 
-		boost::gil::write_view("Image" + std::to_string(rand()) +  ".png", rgbView, boost::gil::png_tag());
+		boost::gil::write_view("SensorView_" + name + "_" + formatTimeToMS(sensorView.timestamp()) +  ".png", rgbView, boost::gil::png_tag());
 	}
+}
+
+std::string Record::formatTimeToMS(const osi3::Timestamp& timestamp) {
+	std::chrono::milliseconds timeMilliseconds(timestamp.seconds() * 1000LL + timestamp.nanos() / 1000000);
+	return std::to_string(timeMilliseconds.count()) + " ms";
 }
 
 int Record::readOSIMessage(const std::string& name, std::string& message) {
