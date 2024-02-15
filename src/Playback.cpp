@@ -146,10 +146,20 @@ int Playback::writeOSIMessage(const std::string& name, const std::string& value)
 
 int Playback::readOSIMessage(const std::string& name, std::string& message) {
 	int status = 1;
-	if (getMessageType(name) == eOSIMessage::TrafficUpdateMessage) {
-		osi3::TrafficUpdate trafficUpdate;
-		status = createTrafficUpdateMessage(trafficUpdate);
-		trafficUpdate.SerializeToString(&message);
+	auto messageType = getMessageType(name);
+	switch (messageType) {
+		case TrafficUpdateMessage:
+		{
+			osi3::TrafficUpdate trafficUpdate;
+			status = createTrafficUpdateMessage(trafficUpdate);
+			trafficUpdate.SerializeToString(&message);
+			break;
+		}
+		case SensorViewConfigurationMessage:
+		{
+			status = 0;
+			break;
+		}
 	}
 	//add more message types
 	return status;

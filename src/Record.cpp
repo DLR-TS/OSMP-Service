@@ -73,10 +73,9 @@ std::string Record::formatTimeToMS(const osi3::Timestamp& timestamp) {
 int Record::readOSIMessage(const std::string& name, std::string& message) {
 	std::cout << "Nothing to read from " << name << std::endl;
 	if (getMessageType(name) == eOSIMessage::SensorViewConfigurationMessage) {
-		osi3::SensorViewConfiguration c;
-		message = c.SerializeAsString();
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 
 int Record::doStep(double stepSize) {
