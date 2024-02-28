@@ -42,9 +42,16 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 # get dependencies distributed as conan packages
+if(UNIX)
 conan_cmake_run(CONANFILE conanfile.txt
                 BASIC_SETUP CMAKE_TARGETS
                 BUILD missing)
+endif()
+if(WIN32)
+conan_cmake_run(CONANFILE conanfile_windows.txt
+                BASIC_SETUP CMAKE_TARGETS
+                BUILD missing)
+endif()
 
 # include protobuf, yaml_cpp, catch2, fakeit
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
