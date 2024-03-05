@@ -41,12 +41,12 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 		if (writeThread.joinable()) {
 			writeThread.join();
 		}
-		writeThread = std::thread(&Record::saveImage, this, sensorView, name);
+		writeThread = std::thread(&Record::saveImage, this, name, sensorView);
 	}
 	return 0;
 }
 
-void Record::saveImage(const osi3::SensorView& sensorView, const std::string& name) {
+void Record::saveImage(const std::string& name, const osi3::SensorView& sensorView) {
 	for (auto& cameraSensorView : sensorView.camera_sensor_view()) {
 		if (!cameraSensorView.has_view_configuration()) {
 			std::cerr << "No OSI3::CameraSensorViewConfiguration given for image!" << std::endl;
@@ -162,7 +162,7 @@ std::string Record::getISO8601Timestamp(int64_t& seconds) {
 	std::time_t tm = std::time(nullptr) + seconds;
 
 	char buffer[32];
-	std::strftime(buffer, sizeof(buffer), "%Y%m%dT%H%M%S%z", std::localtime(&tm));
+	std::strftime(buffer, sizeof(buffer), "%Y%m%dT%H%M%SZ", std::localtime(&tm));
 
 	return std::string(buffer);
 }

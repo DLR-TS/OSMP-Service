@@ -24,6 +24,8 @@ public:
 	virtual int readOSIMessage(const std::string& name, std::string& message) override;
 	virtual int doStep(double stepSize) override;
 	virtual void close() override;
+
+	void saveImage(const std::string& name, const osi3::SensorView& sensorView);
 private:
 	struct RecordFileName {
 		std::string firstPart;
@@ -31,13 +33,10 @@ private:
 		std::string secondPart;
 	};
 
+	std::thread writeThread;
 	std::string protobufVersion = std::to_string(GOOGLE_PROTOBUF_VERSION);
-
 	std::map<std::string, RecordFileName> output;
 
-	std::thread writeThread;
-
-	void saveImage(const osi3::SensorView& sensorView, const std::string& name);
 	std::string formatTimeToMS(const osi3::Timestamp& timestamp);
 	RecordFileName createCompliantNameForOSITraceFile(const std::string& message, const std::string& name, const eOSIMessage& messageType);
 	std::string getISO8601Timestamp(int64_t& seconds);
