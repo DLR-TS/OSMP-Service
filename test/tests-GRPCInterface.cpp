@@ -38,10 +38,10 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 
 	std::string hostAddrSource = "localhost:51426";
 	std::string hostAddrSensor = "localhost:51427";
-	GRPCServer sourceGRPCService(hostAddrSource, false);
-	GRPCServer sensorGRPCService(hostAddrSensor, false);
-	sourceGRPCService.startServer(true);
-	sensorGRPCService.startServer(true);
+	GRPCServer sourceGRPCService(hostAddrSource, false, OSMPTIMEUNIT::UNSPECIFIED);
+	GRPCServer sensorGRPCService(hostAddrSensor, false, OSMPTIMEUNIT::UNSPECIFIED);
+	sourceGRPCService.startServer(true, false);
+	sensorGRPCService.startServer(true, false);
 	grpc::ChannelArguments channelArgs;
 	// disable client message size limits
 	channelArgs.SetMaxSendMessageSize(-1);
@@ -146,6 +146,6 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	CHECK(status.ok());
 	CHECK(0 < serializedSensorData.value().size());
 
-	sourceGRPCService.stopServer();
-	sensorGRPCService.stopServer();
+	sourceGRPCService.stopServer(true);
+	sensorGRPCService.stopServer(true);
 }

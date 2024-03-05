@@ -62,8 +62,8 @@ private:
 
 public:
 	GRPCServer(std::string server_address, bool verbose, OSMPTIMEUNIT timeunit, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), timeunit(timeunit), transaction_timeout(std::chrono::milliseconds(5000)) {};
-	void startServer(const bool nonBlocking = false);
-	void stopServer();
+	void startServer(const bool nonBlocking = false, const bool serverStopperActive = true);
+	void stopServer(const bool force = false);
 
 	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response) override;
 	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;

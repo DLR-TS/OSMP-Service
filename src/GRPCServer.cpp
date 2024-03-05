@@ -1,6 +1,6 @@
 #include "GRPCServer.h"
 
-void GRPCServer::startServer(const bool nonBlocking)
+void GRPCServer::startServer(const bool nonBlocking, const bool serverStopperActive)
 {
 	if (server) {
 		server->Shutdown(std::chrono::system_clock::now() + transaction_timeout);
@@ -14,20 +14,29 @@ void GRPCServer::startServer(const bool nonBlocking)
 	builder.SetMaxSendMessageSize(-1);
 	server = builder.BuildAndStart();
 
-	std::thread serverStopper([this]() {this->stopServer();});
+	std::thread serverStopper;
+
+	if (serverStopperActive) {
+		serverStopper = std::thread([this]() {this->stopServer(); });
+	}
+
 	if (!nonBlocking) {
 		server->Wait();
 	}
 	else {
 		server_thread = std::make_unique<std::thread>(&grpc::Server::Wait, server);
 	}
-	serverStopper.join();
+	if (serverStopperActive) {
+		serverStopper.join();
+	}
 }
 
-void GRPCServer::stopServer()
+void GRPCServer::stopServer(const bool force)
 {
-	while(!serverStop.load(std::memory_order_relaxed)) {
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+	if (!force) {
+		while (!serverStop.load(std::memory_order_relaxed)) {
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
 	}
 	if (server)
 		server->Shutdown(std::chrono::system_clock::now() + transaction_timeout);

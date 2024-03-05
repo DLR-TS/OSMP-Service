@@ -16,6 +16,7 @@
 #include "ServiceInterface.h"
 
 class Record : public ServiceInterface {
+public:
 	virtual int create(const std::string& path) override;
 	virtual void init(bool verbose, OSMPTIMEUNIT timeunit, float starttime = 0) override;
 
@@ -24,11 +25,26 @@ class Record : public ServiceInterface {
 	virtual int doStep(double stepSize) override;
 	virtual void close() override;
 private:
-	std::map<std::string, std::ofstream*> output;
+	struct RecordFileName {
+		std::string firstPart;
+		uint32_t amount;
+		std::string secondPart;
+	};
+
+	std::string protobufVersion = std::to_string(GOOGLE_PROTOBUF_VERSION);
+
+	std::map<std::string, RecordFileName> output;
+
 	std::thread writeThread;
 
-	void saveImage(const osi3::SensorView sensorView, const std::string name);
+	void saveImage(const osi3::SensorView& sensorView, const std::string& name);
 	std::string formatTimeToMS(const osi3::Timestamp& timestamp);
+	RecordFileName createCompliantNameForOSITraceFile(const std::string& message, const std::string& name, const eOSIMessage& messageType);
+	std::string getISO8601Timestamp(int64_t& seconds);
+	std::string getVersion(osi3::InterfaceVersion& version);
+	std::string asString(RecordFileName& fileName) {
+		return fileName.firstPart + std::to_string(fileName.amount) + fileName.secondPart;
+	}
 };
 
 #endif // !RECORD_H
