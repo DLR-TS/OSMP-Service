@@ -1,5 +1,5 @@
 FROM ostar:core_builder AS osmp_builder
-MAINTAINER bjoern.bahn@dlr.de
+LABEL maintainer="bjoern.bahn@dlr.de"
 #build image ostar:core_builder with Dockerfile4OstarCore
 
 RUN mkdir osmpservice && mkdir osmpservice/build
