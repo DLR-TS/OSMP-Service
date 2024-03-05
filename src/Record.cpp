@@ -29,14 +29,15 @@ int Record::writeOSIMessage(const std::string& name, const std::string& value) {
 		fileName = newFileName;
 	}
 
-	std::ofstream stream = std::ofstream(asString(fileName), std::ofstream::binary);
+	std::ofstream stream = std::ofstream(asString(fileName), std::ofstream::binary | std::ofstream::app);
 	uint32_t size = (uint32_t)value.size();
 	stream.write((char*)&size, sizeof(size));
 	stream << value << std::flush;
 	stream.close();
 
 	osi3::SensorView sensorView;
-	if (sensorView.ParseFromString(value)) {
+	if (messageType == eOSIMessage::SensorViewMessage) {
+		sensorView.ParseFromString(value);
 		if (writeThread.joinable()) {
 			writeThread.join();
 		}
@@ -173,9 +174,9 @@ std::string Record::getVersion(osi3::InterfaceVersion& version) {
 	if (version.has_version_major())
 		major = std::to_string(version.version_major());
 	if (version.has_version_minor())
-		minor = std::to_string(version.version_major());
+		minor = std::to_string(version.version_minor());
 	if (version.has_version_patch())
-		patch = std::to_string(version.version_major());
+		patch = std::to_string(version.version_patch());
 
 	return major + minor + patch;
 }

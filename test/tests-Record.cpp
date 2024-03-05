@@ -63,4 +63,46 @@ TEST_CASE("Record Test write OSI Message shall not write SensorViewConfig since 
 	CHECK(success == 0);
 }
 
+TEST_CASE("Record Test write OSI Message shall not write2 SensorViewConfig since it is not a sensor") {
+	std::string filename1 = "_sd_350_3021009_1_SensorData.osi";
+	std::string filename2 = "_sd_350_3021009_2_SensorData.osi";
+	std::remove(filename1.c_str());
+	std::remove(filename2.c_str());
+
+	Record r;
+	osi3::SensorData sd;
+
+	int success = r.writeOSIMessage("SensorData", sd.SerializeAsString());
+	CHECK(success == 0);
+
+	std::ifstream file(filename1.c_str(), std::ifstream::binary);
+	if (file) {
+		file.seekg(0, std::ios::end);
+		std::streampos fileSize = file.tellg();
+		file.seekg(0, std::ios::beg);
+		CHECK(fileSize == 4);
+		file.close();
+	}
+	else {
+		std::cout << "Could not open file initially" << std::endl;
+		CHECK(false);
+	}
+
+	success = r.writeOSIMessage("SensorData", sd.SerializeAsString());
+	CHECK(success == 0);
+	std::ifstream file2(filename2.c_str(), std::ifstream::binary);
+
+	if (file2) {
+		file2.seekg(0, std::ios::end);
+		std::streampos fileSize = file2.tellg();
+		file2.seekg(0, std::ios::beg);
+		CHECK(fileSize == 8);
+		file2.close();
+	}
+	else {
+		std::cout << "Could not open file after appending" << std::endl;
+		CHECK(false);
+	}
+}
+
 //TODO: Add more complex tests for writeOSIMessage()
