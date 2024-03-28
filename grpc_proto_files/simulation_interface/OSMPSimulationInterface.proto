@@ -4,26 +4,22 @@ import "grpc_proto_files/CoSiMaMessages.proto";
 package CoSiMa.rpc;
 
 service OSMPSimulationInterface {
-	rpc SetConfig(OSMPConfig) returns (Int32) {}
-	rpc UploadFMU(FMU) returns (UploadStatus) {}
+	rpc SetConfig(OSMPConfig) returns (Status) {}
 }
 
 message OSMPConfig {
-	string fmupath = 1;
-	repeated NamedString parameter = 2;
+	string filepath = 1;
+	bytes binaryfile = 2;
+	repeated NamedString parameter = 3;
 }
 
-message FMU{
-    bytes binaryFMU = 1;
+message Status {
+    string Message = 1;
+    UploadStatusCode Code = 2;
 }
 
 enum UploadStatusCode {
     Unknown = 0;
     Ok = 1;
     Failed = 2;
-}
-
-message UploadStatus {
-    string Message = 1;
-    UploadStatusCode Code = 2;
 }
