@@ -26,8 +26,12 @@ public:
 	virtual void init(bool verbose, OSMPTIMEUNIT timeunit, float starttime = 0) = 0;
 	virtual void finishInitialization() {};
 
-	virtual int writeOSIMessage(const std::string& name, const std::string& value) = 0;
+	virtual int writeOSIMessage(const std::string& name, const std::string& message) = 0;
+	virtual int writeParameter(const std::string& name, const std::string& value) = 0;
+
 	virtual int readOSIMessage(const std::string& name, std::string& message) = 0;
+	virtual int readParameter(const std::string& name, std::string& value) = 0;
+
 	virtual int doStep(double stepSize) = 0;
 	virtual void close() = 0;
 

@@ -66,9 +66,12 @@ public:
 	void stopServer(const bool force = false);
 
 	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response) override;
-	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
-	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
 	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) override;
 	virtual grpc::Status Close(grpc::ServerContext* context, const CoSiMa::rpc::Bool* request, CoSiMa::rpc::Bool* response) override;
+
+	virtual grpc::Status GetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
+	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::String* response) override;
+	virtual grpc::Status SetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
+	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedString* request, CoSiMa::rpc::Int32* response) override;
 };
 #endif //!GRPCSERVER_H

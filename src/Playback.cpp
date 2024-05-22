@@ -165,6 +165,16 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 	return status;
 }
 
+int Playback::writeParameter(const std::string& name, const std::string& value) {
+	//TODO 2024
+	return 0;
+};
+
+int Playback::readParameter(const std::string& name, std::string& value) {
+	//TODO 2024
+	return 0;
+}
+
 int Playback::doStep(double stepSize) {
 	if (firstDoStep) {
 		firstDoStep = false;
