@@ -2,11 +2,10 @@
 @authors German Aerospace Center: Nils Wendorff, Björn Bahn, Danny Behnecke
 */
 
-#ifndef OSMPCLIENT_H
-#define OSMPCLIENT_H
+#ifndef OSMPSERVICE_H
+#define OSMPSERVICE_H
 
 #include <iostream>
-#include <vector>
 #include <string>
 
-#endif // !OSMPCLIENT_H
+#endif // !OSMPSERVICE_H

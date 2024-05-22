@@ -16,5 +16,6 @@ service SimulationInterface {
 	rpc SetDoubleValue(NamedDouble) returns (Int32) {}
 	rpc SetStringValue(NamedBytes) returns (Int32) {}
 
-	rpc DoStep(Double) returns (Int32) {}	
+	rpc DoStep(Double) returns (Int32) {}
+	rpc Close(Bool) returns (Bool) {}
 }
