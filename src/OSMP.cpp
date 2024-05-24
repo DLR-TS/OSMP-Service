@@ -286,6 +286,12 @@ void OSMP::writeToHeap(address& address, const std::string& value) {
 }
 
 int OSMP::writeParameter(const std::string& name, const std::string& value) {
+
+	if (value.size() == 0) {
+		std::cout << "Simulation does not override " << name << " since no value is given in this timestep " << std::endl;
+	return 0;
+  }
+
 	for (auto const& var : *(modelDescription->model_variables)) {
 		if (var.causality != fmi4cpp::fmi2::causality::input || var.name != name) {
 			continue;
