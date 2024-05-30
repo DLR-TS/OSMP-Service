@@ -88,12 +88,10 @@ int Record::readOSIMessage(const std::string& name, std::string& message) {
 }
 
 int Record::writeParameter(const std::string& name, const std::string& value) {
-	//TODO 2024
 	return 0;
 };
 
 int Record::readParameter(const std::string& name, std::string& value) {
-	//TODO 2024
 	return 0;
 }
 

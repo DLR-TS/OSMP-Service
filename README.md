@@ -30,6 +30,6 @@ Open the folder in Visual Studio and use the cmake integration.
 
 # Contacts
 
-bjoern.bahn@dlr.de danny.behnecke@dlr.de
+bjoern.bahn@dlr.de frank.baumgarten@dlr.de
 
-This software was originally developed as part of SetLevel.
+This software was originally developed as part of [SetLevel](https://setlevel.de/).

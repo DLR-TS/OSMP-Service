@@ -45,10 +45,12 @@ private:
 	*/
 	std::vector<std::string> parseNextLine();
 	int createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate);
+	int createTrafficCommandMessage(osi3::TrafficCommand& trafficCommand);
 	void createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject);
 	unsigned long long determineTimeOffset(OSMPTIMEUNIT& timeunit, std::string& timestamp);
 	bool lineInTimestep();
 
+	//TrafficUpdate
 	uint8_t indexTS;
 	uint8_t indexID;
 	uint8_t indexHeight;
@@ -64,6 +66,12 @@ private:
 	uint8_t indexPositionY;
 	uint8_t indexPositionZ;
 	uint8_t indexModelReference;
+	//TrafficCommand
+	uint8_t indexLongitudinalDistanceActionDistance;
+	uint8_t indexSpeedActionAbsoluteTargetSpeed;
+
+	bool trafficCommandComputed = false;
+	std::string trafficCommandString;
 };
 
 #endif // !PLAYBACK_H
