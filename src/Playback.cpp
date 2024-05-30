@@ -180,6 +180,7 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 			break;
 		}
 		case TrafficCommandMessage:
+		{
 			//support for only one traffic command message
 			if (trafficCommandComputed) {
 				message = trafficCommandString;
@@ -190,6 +191,7 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 			trafficCommand.SerializeToString(&trafficCommandString);
 			message = trafficCommandString;
 			break;
+		}
 	}
 	//add more message types
 	return status;
@@ -316,8 +318,8 @@ int Playback::createTrafficCommandMessage(osi3::TrafficCommand &trafficCommand) 
 	action->mutable_longitudinal_distance_action()->set_distance(std::stod(currentLine[indexLongitudinalDistanceActionDistance]));
 	action = trafficCommand.add_action();
 	action->mutable_speed_action()->set_absolute_target_speed(std::stod(currentLine[indexSpeedActionAbsoluteTargetSpeed]));
+	return 0;
 }
-
 
 void Playback::close() {
 	filestream.close();

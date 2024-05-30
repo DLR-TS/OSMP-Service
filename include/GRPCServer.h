@@ -40,6 +40,7 @@ class GRPCServer : public CoSiMa::rpc::SimulationInterface::Service, public CoSi
 private:
 	const std::string server_address;
 	const std::chrono::milliseconds transaction_timeout;
+	const std::string port;
 	const bool verbose;
 	const int divider;
 	OSMPTIMEUNIT timeunit;
@@ -61,7 +62,7 @@ private:
 	std::string saveFile(const CoSiMa::rpc::OSMPConfig* config, OSMPSERVICEMODE mode);
 
 public:
-	GRPCServer(std::string server_address, bool verbose, OSMPTIMEUNIT timeunit, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), timeunit(timeunit), transaction_timeout(std::chrono::milliseconds(5000)) {};
+	GRPCServer(std::string server_address, bool verbose, OSMPTIMEUNIT timeunit, std::string port, int divider = 1) : server_address(server_address), verbose(verbose), port(port), divider(divider), timeunit(timeunit), transaction_timeout(std::chrono::milliseconds(5000)) {};
 	void startServer(const bool nonBlocking = false, const bool serverStopperActive = true);
 	void stopServer(const bool force = false);
 

@@ -27,6 +27,7 @@ class Playback : public ServiceInterface {
 	virtual int doStep(double stepSize) override;
 	virtual void close() override;
 private:
+
 	std::ifstream filestream;
 	std::vector<std::string> currentLine;
 	unsigned long long timeOffsetMicros;

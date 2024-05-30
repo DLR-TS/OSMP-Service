@@ -48,7 +48,6 @@ void GRPCServer::stopServer(const bool force)
 
 grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response)
 {
-
 	OSMPSERVICEMODE mode = determineMode(config);
 	std::string filename = saveFile(config, mode);
 
@@ -101,7 +100,7 @@ std::string GRPCServer::saveFile(const CoSiMa::rpc::OSMPConfig* config, GRPCServ
 	if (file.length() != 0) {
 		//write file
 		if (mode == OSMPSERVICEMODE::FMU) { filename = FMUNAME; }
-		if (mode == OSMPSERVICEMODE::PLAYBACK) { filename = CSVINPUTNAME; }
+		if (mode == OSMPSERVICEMODE::PLAYBACK) { filename = port + CSVINPUTNAME; }
 		std::ofstream binFile(filename, std::ios::binary);
 		binFile.write(file.c_str(), file.size());
 		binFile.close();
