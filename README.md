@@ -1,6 +1,6 @@
-# OSMP Service
+# OSTAR OSMP-Service
 
-OSMP Service is a part of [OSTAR](https://github.com/DLR-TS/OSTAR-Quickstart).
+OSMP-Service is a part of [OSTAR](https://github.com/DLR-TS/OSTAR-Quickstart).
 It connects [FMI](https://fmi-standard.org/) models with [OSI](https://www.asam.net/standards/detail/osi/) messages to OSTAR.
 It also can replay trajectories to OSI messages and save OSI trace files.
 
@@ -52,7 +52,6 @@ The complete list can be found [here](https://github.com/DLR-TS/Carla-OSI-Servic
 # Further information
 
 Check out the OSTAR documentation at [OSTAR Quickstart](https://github.com/DLR-TS/OSTAR-Quickstart/tree/main/docu).
-
 
 # Contacts
 
