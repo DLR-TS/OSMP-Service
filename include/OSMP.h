@@ -23,8 +23,12 @@ public:
 	virtual void init(bool verbose, OSMPTIMEUNIT timeunit, float starttime = 0) override;
 	virtual void finishInitialization() override;
 
-	virtual int writeOSIMessage(const std::string& name, const std::string& value) override;
+	virtual int writeOSIMessage(const std::string& name, const std::string& message) override;
+	virtual int writeParameter(const std::string& name, const std::string& value) override;
+
 	virtual int readOSIMessage(const std::string& name, std::string& message) override;
+	virtual int readParameter(const std::string& name, std::string& value) override;
+
 	virtual int doStep(double stepSize) override;
 	virtual void close() override;
 	void setInitialParameter(const std::string& name, const std::string& value) override;

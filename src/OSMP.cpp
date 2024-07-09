@@ -88,7 +88,7 @@ void OSMP::setInitialParameter(const std::string& name, const std::string& value
 			return;
 		}
 	}
-	std::cout << "Error: Could not set intial parameter: " << name << " to " << value << "\n"
+	std::cerr << "Error: Could not set intial parameter: " << name << " to " << value << "\n"
 		<< "Possible model parameter variables are:\n";
 	for (auto const& var : *(modelDescription->model_variables)) {
 		if (var.causality == fmi4cpp::fmi2::causality::parameter) {
@@ -283,6 +283,86 @@ void OSMP::writeToHeap(address& address, const std::string& value) {
 		trafficUpdate.SerializeToArray((void*)address.addr.address, address.size);
 		break;
 	}
+}
+
+int OSMP::writeParameter(const std::string& name, const std::string& value) {
+
+	if (value.size() == 0) {
+		std::cout << "Simulation does not override " << name << " since no value is given in this timestep " << std::endl;
+	return 0;
+  }
+
+	for (auto const& var : *(modelDescription->model_variables)) {
+		if (var.causality != fmi4cpp::fmi2::causality::input || var.name != name) {
+			continue;
+		}
+		if (var.is_boolean()) {
+			coSimSlave->write_boolean(var.value_reference, std::stoi(value));
+			return 0;
+		}
+		else if (var.is_integer()) {
+			coSimSlave->write_integer(var.value_reference, std::stoi(value));
+			return 0;
+		}
+		else if (var.is_real()) {
+			coSimSlave->write_real(var.value_reference, std::stod(value));
+			return 0;
+		}
+		else if (var.is_string()) {
+			coSimSlave->write_string(var.value_reference, value.c_str());
+			return 0;
+		}
+	}
+	std::cerr << "Error: Could not set parameter: " << name << " to " << value << "\n"
+		<< "Possible model variables are:\n";
+	for (auto const& var : *(modelDescription->model_variables)) {
+		if (var.causality == fmi4cpp::fmi2::causality::input) {
+			std::cout << var.name << "\n";
+		}
+	}
+	std::cout << std::flush;
+	return 1;
+};
+
+int OSMP::readParameter(const std::string& name, std::string& value) {
+	for (auto const& var : *(modelDescription->model_variables)) {
+		if (var.causality != fmi4cpp::fmi2::causality::output || var.name != name) {
+			continue;
+		}
+		if (var.is_boolean()) {
+			fmi2Boolean read_value;
+			coSimSlave->read_boolean(var.value_reference, read_value);
+			value = std::to_string(read_value);
+			return 0;
+		}
+		else if (var.is_integer()) {
+			fmi2Integer read_value;
+			coSimSlave->read_boolean(var.value_reference, read_value);
+			value = std::to_string(read_value);
+			return 0;
+		}
+		else if (var.is_real()) {
+			fmi2Real read_value;
+			coSimSlave->read_real(var.value_reference, read_value);
+			value = std::to_string(read_value);
+			return 0;
+		}
+		else if (var.is_string()) {
+			fmi2String read_value;
+			coSimSlave->read_string(var.value_reference, read_value);
+			value = read_value;
+			return 0;
+		}
+	}
+	std::cerr << "Error: Could not set parameter: " << name << " to " << value << "\n"
+		<< "Possible model variables are:\n";
+	for (auto const& var : *(modelDescription->model_variables)) {
+		if (var.causality == fmi4cpp::fmi2::causality::input) {
+			std::cout << var.name << "\n";
+		}
+	}
+	std::cout << std::flush;
+	return 1;
 }
 
 int OSMP::doStep(double stepSize) {

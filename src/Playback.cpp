@@ -7,6 +7,7 @@ int Playback::create(const std::string& path) {
 
 void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 	this->verbose = verbose;
+	bool trafficCommandProvider = false;
 
 	currentLine = parseNextLine();
 	for (uint8_t index = 0; index < currentLine.size(); index++) {
@@ -16,6 +17,7 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 		//instead of
 		//!std::string::compare(name)
 
+		//TrafficUpdate
 		if (currentLine[index].rfind("ts", 0) == 0) {
 			indexTS = index;
 		}
@@ -62,28 +64,45 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 		else if (currentLine[index].rfind("model_reference", 0) == 0) {
 			indexModelReference = index;
 		}
+		//TrafficCommand
+		else if (currentLine[index].rfind("LongitudinalDistanceAction_Distance", 0) == 0) {
+			indexLongitudinalDistanceActionDistance = index;
+			trafficCommandProvider = true;
+		}
+		else if (currentLine[index].rfind("SpeedAction_AbsoluteTargetSpeed", 0) == 0) {
+			indexSpeedActionAbsoluteTargetSpeed = index;
+			trafficCommandProvider = true;
+		}
 	}
-	if (verbose) {
+	if (verbose && !trafficCommandProvider) {
 		std::cout << "Configuration of indexes: "
-		<< "\ntimestamp: " << unsigned(indexTS)
-		<< "\nindex: " << unsigned(indexID)
-		<< "\nheight: " << unsigned(indexHeight)
-		<< "\nwidht: " << unsigned(indexWidth)
-		<< "\nlength: " << unsigned(indexLength)
-		<< "\nclass: " << unsigned(indexClass)
-		<< "\nvx: " << unsigned(indexVelocityX)
-		<< "\nvy: " << unsigned(indexVelocityY)
-		<< "\nax: " << unsigned(indexAccelerationX)
-		<< "\nay: " << unsigned(indexAccelerationY)
-		<< "\nheading: " << unsigned(indexOrientation)
-		<< "\npositionx: " << unsigned(indexPositionX)
-		<< "\npositiony: " << unsigned(indexPositionY)
-		<< "\npositiony: " << unsigned(indexPositionZ)
-		<< "\nmodel_reference: " << unsigned(indexModelReference) << std::endl;
+			<< "\ntimestamp: " << unsigned(indexTS)
+			<< "\nindex: " << unsigned(indexID)
+			<< "\nheight: " << unsigned(indexHeight)
+			<< "\nwidht: " << unsigned(indexWidth)
+			<< "\nlength: " << unsigned(indexLength)
+			<< "\nclass: " << unsigned(indexClass)
+			<< "\nvx: " << unsigned(indexVelocityX)
+			<< "\nvy: " << unsigned(indexVelocityY)
+			<< "\nax: " << unsigned(indexAccelerationX)
+			<< "\nay: " << unsigned(indexAccelerationY)
+			<< "\nheading: " << unsigned(indexOrientation)
+			<< "\npositionx: " << unsigned(indexPositionX)
+			<< "\npositiony: " << unsigned(indexPositionY)
+			<< "\npositiony: " << unsigned(indexPositionZ)
+			<< "\nmodel_reference: " << unsigned(indexModelReference) << std::endl;
+	}
+	else if (verbose && trafficCommandProvider) {
+		std::cout << "Configuration of indexes: "
+			<< "\nindex: " << unsigned(indexID)
+			<< "\nLongitudinalDistanceActionDistance: " << unsigned(indexLongitudinalDistanceActionDistance)
+			<< "\nSpeedAction_AbsoluteTargetSpeed: " << unsigned(indexSpeedActionAbsoluteTargetSpeed) << std::endl;
 	}
 	currentLine = parseNextLine();
 
-	timeOffsetMicros = determineTimeOffset(timeunit, currentLine[indexTS]);
+	if (!trafficCommandProvider) {
+		timeOffsetMicros = determineTimeOffset(timeunit, currentLine[indexTS]);
+	}
 }
 
 std::vector<std::string> Playback::parseNextLine() {
@@ -160,9 +179,30 @@ int Playback::readOSIMessage(const std::string& name, std::string& message) {
 			status = 0;
 			break;
 		}
+		case TrafficCommandMessage:
+		{
+			//support for only one traffic command message
+			if (trafficCommandComputed) {
+				message = trafficCommandString;
+				break;
+			}
+			osi3::TrafficCommand trafficCommand;
+			status = createTrafficCommandMessage(trafficCommand);
+			trafficCommand.SerializeToString(&trafficCommandString);
+			message = trafficCommandString;
+			break;
+		}
 	}
 	//add more message types
 	return status;
+}
+
+int Playback::writeParameter(const std::string& name, const std::string& value) {
+	return 0;
+};
+
+int Playback::readParameter(const std::string& name, std::string& value) {
+	return 0;
 }
 
 int Playback::doStep(double stepSize) {
@@ -270,6 +310,15 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	base->mutable_position()->set_x(std::stod(values[indexPositionX]));
 	base->mutable_position()->set_y(std::stod(values[indexPositionY]));
 	base->mutable_position()->set_z(std::stod(values[indexPositionZ]));
+}
+
+int Playback::createTrafficCommandMessage(osi3::TrafficCommand &trafficCommand) {
+	trafficCommand.mutable_traffic_participant_id()->set_value(std::stoull(currentLine[indexID]));
+	osi3::TrafficAction* action = trafficCommand.add_action();
+	action->mutable_longitudinal_distance_action()->set_distance(std::stod(currentLine[indexLongitudinalDistanceActionDistance]));
+	action = trafficCommand.add_action();
+	action->mutable_speed_action()->set_absolute_target_speed(std::stod(currentLine[indexSpeedActionAbsoluteTargetSpeed]));
+	return 0;
 }
 
 void Playback::close() {
