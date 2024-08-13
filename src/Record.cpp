@@ -87,6 +87,14 @@ int Record::readOSIMessage(const std::string& name, std::string& message) {
 	return 1;
 }
 
+int Record::writeParameter(const std::string& name, const std::string& value) {
+	return 0;
+};
+
+int Record::readParameter(const std::string& name, std::string& value) {
+	return 0;
+}
+
 int Record::doStep(double stepSize) {
 	return 0;
 }

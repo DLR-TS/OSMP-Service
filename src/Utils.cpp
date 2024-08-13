@@ -29,17 +29,17 @@ bool matchingNames(const std::string& name1, const std::string& name2) {
 	}
 	else {
 		//with index
-		std::string_view name1WithoutIndex = name1.substr(0, openbracketposname1);
+		std::string name1WithoutIndex = name1.substr(0, openbracketposname1);
 		std::size_t openbracketposname2 = name2.find("[");
-		std::string_view name2WithoutIndex = name2.substr(0, openbracketposname1);
+		std::string name2WithoutIndex = name2.substr(0, openbracketposname1);
 
 		if (name2WithoutIndex.find(name1WithoutIndex) != std::string::npos
 			|| name1WithoutIndex.find(name2WithoutIndex) != std::string::npos) {
 			//matching names
 			std::size_t closebracketposname1 = name1.find("]");
 			std::size_t closebracketposname2 = name2.find("]");
-			std::string_view name1_index = name1.substr(openbracketposname1 + 1, closebracketposname1 - 1);
-			std::string_view name2_index = name2.substr(openbracketposname2 + 1, closebracketposname2 - 1);
+			std::string name1_index = name1.substr(openbracketposname1 + 1 , closebracketposname1 - 1);
+			std::string name2_index = name2.substr(openbracketposname2 + 1 , closebracketposname2 - 1);
 			if (name1_index == name2_index) {
 				//matching index
 				return true;

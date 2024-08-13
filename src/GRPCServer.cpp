@@ -48,7 +48,6 @@ void GRPCServer::stopServer(const bool force)
 
 grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response)
 {
-
 	OSMPSERVICEMODE mode = determineMode(config);
 	std::string filename = saveFile(config, mode);
 
@@ -101,7 +100,7 @@ std::string GRPCServer::saveFile(const CoSiMa::rpc::OSMPConfig* config, GRPCServ
 	if (file.length() != 0) {
 		//write file
 		if (mode == OSMPSERVICEMODE::FMU) { filename = FMUNAME; }
-		if (mode == OSMPSERVICEMODE::PLAYBACK) { filename = CSVINPUTNAME; }
+		if (mode == OSMPSERVICEMODE::PLAYBACK) { filename = port + CSVINPUTNAME; }
 		std::ofstream binFile(filename, std::ios::binary);
 		binFile.write(file.c_str(), file.size());
 		binFile.close();
@@ -113,7 +112,7 @@ std::string GRPCServer::saveFile(const CoSiMa::rpc::OSMPConfig* config, GRPCServ
 	return filename;
 }
 
-grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
+grpc::Status GRPCServer::GetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
 	std::string message;
 	int status = serviceInterface->readOSIMessage(request->value(), message);
 	response->set_value(message);
@@ -125,9 +124,21 @@ grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSi
 	}
 }
 
-grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
+grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::String* response) {
+	std::string value;
+	serviceInterface->readParameter(request->value(), value);
+	response->set_value(value);
+	return grpc::Status::OK;
+}
+
+grpc::Status GRPCServer::SetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
 	response->set_value(
 		serviceInterface->writeOSIMessage(request->name(), request->value()));
+	return grpc::Status::OK;
+}
+
+grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedString* request, CoSiMa::rpc::Int32* response) {
+	serviceInterface->writeParameter(request->name(), request->value());
 	return grpc::Status::OK;
 }
 

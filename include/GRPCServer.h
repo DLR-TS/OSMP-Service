@@ -40,6 +40,7 @@ class GRPCServer : public CoSiMa::rpc::SimulationInterface::Service, public CoSi
 private:
 	const std::string server_address;
 	const std::chrono::milliseconds transaction_timeout;
+	const std::string port;
 	const bool verbose;
 	const int divider;
 	OSMPTIMEUNIT timeunit;
@@ -61,14 +62,17 @@ private:
 	std::string saveFile(const CoSiMa::rpc::OSMPConfig* config, OSMPSERVICEMODE mode);
 
 public:
-	GRPCServer(std::string server_address, bool verbose, OSMPTIMEUNIT timeunit, int divider = 1) : server_address(server_address), verbose(verbose), divider(divider), timeunit(timeunit), transaction_timeout(std::chrono::milliseconds(5000)) {};
+	GRPCServer(std::string server_address, bool verbose, OSMPTIMEUNIT timeunit, std::string port, int divider = 1) : server_address(server_address), verbose(verbose), port(port), divider(divider), timeunit(timeunit), transaction_timeout(std::chrono::milliseconds(5000)) {};
 	void startServer(const bool nonBlocking = false, const bool serverStopperActive = true);
 	void stopServer(const bool force = false);
 
 	virtual grpc::Status SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response) override;
-	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
-	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
 	virtual grpc::Status DoStep(grpc::ServerContext* context, const CoSiMa::rpc::Double* request, CoSiMa::rpc::Int32* response) override;
 	virtual grpc::Status Close(grpc::ServerContext* context, const CoSiMa::rpc::Bool* request, CoSiMa::rpc::Bool* response) override;
+
+	virtual grpc::Status GetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) override;
+	virtual grpc::Status GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::String* response) override;
+	virtual grpc::Status SetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) override;
+	virtual grpc::Status SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedString* request, CoSiMa::rpc::Int32* response) override;
 };
 #endif //!GRPCSERVER_H
