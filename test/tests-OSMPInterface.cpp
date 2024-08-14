@@ -12,10 +12,12 @@ TEST_CASE("OSMP Interface Test", "[OSMPInterface]") {
 	OSMP source;
 
 	CHECK(0 == source.create(testResourceDirectory + "/OSMPDummySource.fmu"));
-	source.init(false);
+	source.init(false, OSMPTIMEUNIT::UNSPECIFIED);
 
 	// OSMP-FMUs have to abide FMI, thus this variable defined as ausality="output" variability="discrete" initial="exact" has to be readable. It can return a nullpointer
-	std::string serializedSensorView = source.readOSIMessage("OSMPSensorViewOut");
+	std::string serializedSensorView;
+	int success = source.readOSIMessage("OSMPSensorViewOut", serializedSensorView);
+	CHECK(0 == success);
 	CHECK(0 <= serializedSensorView.size());
 
 	osi3::SensorView sensorView;
@@ -25,19 +27,22 @@ TEST_CASE("OSMP Interface Test", "[OSMPInterface]") {
 
 	CHECK(0 == source.doStep(0.06));
 
-	serializedSensorView = source.readOSIMessage("OSMPSensorViewOut");
+	success = source.readOSIMessage("OSMPSensorViewOut", serializedSensorView);
+	CHECK(0 == success);
 	CHECK(0 < serializedSensorView.size());
 
 	OSMP sensor;
 
 	CHECK(0 == sensor.create(testResourceDirectory + "/OSMPDummySensor.fmu"));
-	sensor.init(false);
+	sensor.init(false, OSMPTIMEUNIT::UNSPECIFIED);
 
 	CHECK(0 == sensor.writeOSIMessage("OSMPSensorViewIn", serializedSensorView));
 
 	CHECK(0 == sensor.doStep(0.06));
 
-	std::string serializedSensorData = sensor.readOSIMessage("OSMPSensorDataOut");
+	std::string serializedSensorData;
+	success = sensor.readOSIMessage("OSMPSensorDataOut", serializedSensorData);
+	CHECK(0 == success);
 	CHECK(0 < serializedSensorData.size());
 
 	osi3::SensorData sensorData;

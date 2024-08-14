@@ -3,16 +3,18 @@ project ("OSMPService" CXX)
 
 message("Running with CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
 
-set(CMAKE_CXX_STANDARD 17)
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+	set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MSVC)
- option(DONT_FORCE_STATIC_LIBS "Building dynamic libraries fails for some targets because of incompatabilities in dependencies (protobuf, see FetchGRPC.cmake) and thus static lib's are enforced. Enable this option to abide CMAKE's BUILD_SHARED_LIBS variable" OFF)
- if(NOT DONT_FORCE_STATIC_LIBS)
- set(BUILD_SHARED_LIBS false)
- message("Forcing the use of static libraries as building dynamic libraries fails for some targets using MSVC because of incompatabilities in some dependencies. Enable DONT_FORCE_STATIC_LIBS to unforce this behaviour")
- endif(NOT DONT_FORCE_STATIC_LIBS)
+	option(DONT_FORCE_STATIC_LIBS "Building dynamic libraries fails for some targets because of incompatabilities in dependencies (protobuf, see FetchGRPC.cmake) and thus static lib's are enforced. Enable this option to abide CMAKE's BUILD_SHARED_LIBS variable" OFF)
+	if(NOT DONT_FORCE_STATIC_LIBS)
+		set(BUILD_SHARED_LIBS false)
+		message("Forcing the use of static libraries as building dynamic libraries fails for some targets using MSVC because of incompatabilities in some dependencies. Enable DONT_FORCE_STATIC_LIBS to unforce this behaviour")
+	endif(NOT DONT_FORCE_STATIC_LIBS)
 endif(MSVC)
 
 option(GIT_SUBMODULE "Check submodules during build" ON)
@@ -39,15 +41,25 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan_provider.cmake)
 
 # get dependencies distributed as conan packages
+if(UNIX)
 conan_cmake_run(CONANFILE conanfile.txt
                 BASIC_SETUP CMAKE_TARGETS
                 BUILD missing)
+endif()
+if(WIN32)
+conan_cmake_run(CONANFILE conanfile_windows.txt
+                BASIC_SETUP CMAKE_TARGETS
+                BUILD missing)
+endif()
 
 # include protobuf, yaml_cpp, catch2, fakeit
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 # needed by cmake_find_package conan generator, but breaks protobuf
 #include(${CMAKE_CURRENT_BINARY_DIR}/conan_paths.cmake)
 conan_basic_setup()
+
+find_package(PNG REQUIRED)
+find_package(Boost 1.80.0 REQUIRED)
 
 # Somehow, sometimes the conan package's protoc binary is not found by the default find script, so help hinting it:
 find_program(Protobuf_PROTOC_EXECUTABLE
@@ -107,6 +119,11 @@ else()
 	target_link_libraries(OSMPServiceLib PUBLIC open_simulation_interface_static)
 endif(BUILD_SHARED_LIBS)
 
+include_directories(OSMPServiceLib PUBLIC ${Boost_INCLUDE_DIRS})
+include_directories(OSMPServiceLib PUBLIC ${PNG_INCLUDE_DIRS})
+
+target_link_libraries(OSMPServiceLib PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(OSMPServiceLib PUBLIC ${PNG_LIBRARIES})
 
 ## generate grpc code
 # custom grcp cpp code generation script that is easier to use than gRPC's default function
@@ -154,4 +171,8 @@ include(Catch)
 catch_discover_tests(test_OSMPService)
 
 add_executable (OSMPService "${CMAKE_CURRENT_LIST_DIR}/src/OSMPService.cpp" "${CMAKE_CURRENT_LIST_DIR}/include/OSMPService.h")
+if (${CMAKE_CXX_STANDARD} LESS 17 AND UNIX)
+target_link_libraries(OSMPService PUBLIC OSMPServiceLib stdc++fs)
+else()
 target_link_libraries(OSMPService PUBLIC OSMPServiceLib)
+endif()

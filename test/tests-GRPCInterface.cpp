@@ -38,10 +38,10 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 
 	std::string hostAddrSource = "localhost:51426";
 	std::string hostAddrSensor = "localhost:51427";
-	GRPCServer sourceGRPCService(hostAddrSource, false);
-	GRPCServer sensorGRPCService(hostAddrSensor, false);
-	sourceGRPCService.startServer(true);
-	sensorGRPCService.startServer(true);
+	GRPCServer sourceGRPCService(hostAddrSource, false, OSMPTIMEUNIT::UNSPECIFIED, "1000");
+	GRPCServer sensorGRPCService(hostAddrSensor, false, OSMPTIMEUNIT::UNSPECIFIED, "1000");
+	sourceGRPCService.startServer(true, false);
+	sensorGRPCService.startServer(true, false);
 	grpc::ChannelArguments channelArgs;
 	// disable client message size limits
 	channelArgs.SetMaxSendMessageSize(-1);
@@ -77,7 +77,7 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	osmpSensorViewOut.set_value("OSMPSensorViewOut");
 
 	//here, returning an empty message is valid because time has not advanced, yet
-	status = sourceSimStub.GetStringValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewOut, &serializedSensorView);
+	status = sourceSimStub.GetOSIValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewOut, &serializedSensorView);
 
 	CHECK(status.ok());
 	CHECK(0 <= serializedSensorView.value().size());
@@ -88,7 +88,7 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	osmpSensorViewIn.set_value(serializedSensorView.value());
 
 	CoSiMa::rpc::Int32 response;
-	status = sensorSimStub.SetStringValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewIn, &response);
+	status = sensorSimStub.SetOSIValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewIn, &response);
 
 	CHECK(status.ok());
 	CHECK(0 == response.value());
@@ -109,7 +109,7 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 
 	serializedSensorView.Clear();
 
-	status = sourceSimStub.GetStringValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewOut, &serializedSensorView);
+	status = sourceSimStub.GetOSIValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewOut, &serializedSensorView);
 
 	CHECK(status.ok());
 	CHECK(0 < serializedSensorView.value().size());
@@ -119,7 +119,7 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	osmpSensorDataOut.set_value("OSMPSensorDataOut");
 
 	//Input of last step was empty, thus the output is also
-	status = sensorSimStub.GetStringValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorDataOut, &serializedSensorData);
+	status = sensorSimStub.GetOSIValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorDataOut, &serializedSensorData);
 
 	CHECK(status.ok());
 	CHECK(0 <= serializedSensorData.value().size());
@@ -127,7 +127,7 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 	response.Clear();
 	osmpSensorViewIn.set_value(serializedSensorView.value());
 
-	status = sensorSimStub.SetStringValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewIn, &response);
+	status = sensorSimStub.SetOSIValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorViewIn, &response);
 
 	CHECK(status.ok());
 	CHECK(0 == response.value());
@@ -141,11 +141,11 @@ TEST_CASE("gRPC interface test","[GRPCInterface]") {
 
 	serializedSensorData.Clear();
 
-	status = sensorSimStub.GetStringValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorDataOut, &serializedSensorData);
+	status = sensorSimStub.GetOSIValue(CreateDeadlinedClientContext(transactionTimeout).get(), osmpSensorDataOut, &serializedSensorData);
 
 	CHECK(status.ok());
 	CHECK(0 < serializedSensorData.value().size());
 
-	sourceGRPCService.stopServer();
-	sensorGRPCService.stopServer();
+	sourceGRPCService.stopServer(true);
+	sensorGRPCService.stopServer(true);
 }

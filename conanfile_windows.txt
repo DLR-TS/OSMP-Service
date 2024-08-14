@@ -9,19 +9,18 @@ boost/1.80.0
 libzip/1.8.0
 bzip2/1.0.8
 zlib/1.2.12
-libpng/1.6.40
+# problems on windows builds
+libpng/1.5.2
 
 [generators]
-CMakeToolchain
-CMakeDeps
+cmake
+cmake_paths
+cmake_find_package
 
 [options]
-libzip/*:crypto=False
-libzip/*:with_lzma=False
-libzip/*:with_zstd=False
+libzip:crypto=False
+libzip:with_lzma=False
+libzip:with_zstd=False
 
 [imports]
 bin, *.dll -> ./bin
-
-[layout]
-cmake_layout

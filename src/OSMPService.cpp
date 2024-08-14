@@ -3,11 +3,12 @@
 int main(int argc, char *argv[])
 {
 	std::cout << "Welcome to OSMPClient.\nCurrent directory: "
-		<< std::filesystem::current_path() << "\n" << std::endl;
+		<< fs::current_path() << "\n" << std::endl;
 
 	//Server address deliberately chosen to accept any connection
 	std::string server_address = "0.0.0.0:51425";
 	bool verbose = false;
+	std::string port;
 	int divider = 1;
 	OSMPTIMEUNIT timeunit = OSMPTIMEUNIT::UNSPECIFIED;
 
@@ -38,12 +39,13 @@ int main(int argc, char *argv[])
 			else {
 				server_address = parameter;
 			}
+			port = parameter;
 		}
 	}
 
 	std::cout << "Server listens on: " << server_address << std::endl;
 
-	GRPCServer grpc(server_address, verbose, timeunit, divider);
+	GRPCServer grpc(server_address, verbose, timeunit, port, divider);
 	grpc.startServer();
 
 	return 0;

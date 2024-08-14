@@ -1,6 +1,6 @@
 #include "GRPCServer.h"
 
-void GRPCServer::startServer(const bool nonBlocking)
+void GRPCServer::startServer(const bool nonBlocking, const bool serverStopperActive)
 {
 	if (server) {
 		server->Shutdown(std::chrono::system_clock::now() + transaction_timeout);
@@ -13,16 +13,31 @@ void GRPCServer::startServer(const bool nonBlocking)
 	builder.SetMaxReceiveMessageSize(-1);
 	builder.SetMaxSendMessageSize(-1);
 	server = builder.BuildAndStart();
+
+	std::thread serverStopper;
+
+	if (serverStopperActive) {
+		serverStopper = std::thread([this]() {this->stopServer(); });
+	}
+
 	if (!nonBlocking) {
 		server->Wait();
 	}
 	else {
 		server_thread = std::make_unique<std::thread>(&grpc::Server::Wait, server);
 	}
+	if (serverStopperActive) {
+		serverStopper.join();
+	}
 }
 
-void GRPCServer::stopServer()
+void GRPCServer::stopServer(const bool force)
 {
+	if (!force) {
+		while (!serverStop.load(std::memory_order_relaxed)) {
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+	}
 	if (server)
 		server->Shutdown(std::chrono::system_clock::now() + transaction_timeout);
 	if (server_thread)
@@ -33,7 +48,6 @@ void GRPCServer::stopServer()
 
 grpc::Status GRPCServer::SetConfig(grpc::ServerContext* context, const CoSiMa::rpc::OSMPConfig* config, CoSiMa::rpc::Status* response)
 {
-
 	OSMPSERVICEMODE mode = determineMode(config);
 	std::string filename = saveFile(config, mode);
 
@@ -86,7 +100,7 @@ std::string GRPCServer::saveFile(const CoSiMa::rpc::OSMPConfig* config, GRPCServ
 	if (file.length() != 0) {
 		//write file
 		if (mode == OSMPSERVICEMODE::FMU) { filename = FMUNAME; }
-		if (mode == OSMPSERVICEMODE::PLAYBACK) { filename = CSVINPUTNAME; }
+		if (mode == OSMPSERVICEMODE::PLAYBACK) { filename = port + CSVINPUTNAME; }
 		std::ofstream binFile(filename, std::ios::binary);
 		binFile.write(file.c_str(), file.size());
 		binFile.close();
@@ -98,16 +112,33 @@ std::string GRPCServer::saveFile(const CoSiMa::rpc::OSMPConfig* config, GRPCServ
 	return filename;
 }
 
-grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
+grpc::Status GRPCServer::GetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::Bytes* response) {
 	std::string message;
 	int status = serviceInterface->readOSIMessage(request->value(), message);
 	response->set_value(message);
+	if (status == 0) {
+		return grpc::Status::OK;
+	} else {
+		serverStop.store(true, std::memory_order_relaxed);
+		return grpc::Status::CANCELLED;
+	}
+}
+
+grpc::Status GRPCServer::GetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::String* request, CoSiMa::rpc::String* response) {
+	std::string value;
+	serviceInterface->readParameter(request->value(), value);
+	response->set_value(value);
 	return grpc::Status::OK;
 }
 
-grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
+grpc::Status GRPCServer::SetOSIValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedBytes* request, CoSiMa::rpc::Int32* response) {
 	response->set_value(
 		serviceInterface->writeOSIMessage(request->name(), request->value()));
+	return grpc::Status::OK;
+}
+
+grpc::Status GRPCServer::SetStringValue(grpc::ServerContext* context, const CoSiMa::rpc::NamedString* request, CoSiMa::rpc::Int32* response) {
+	serviceInterface->writeParameter(request->name(), request->value());
 	return grpc::Status::OK;
 }
 

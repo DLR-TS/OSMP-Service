@@ -7,6 +7,7 @@ int Playback::create(const std::string& path) {
 
 void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 	this->verbose = verbose;
+	bool trafficCommandProvider = false;
 
 	currentLine = parseNextLine();
 	for (uint8_t index = 0; index < currentLine.size(); index++) {
@@ -16,6 +17,7 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 		//instead of
 		//!std::string::compare(name)
 
+		//TrafficUpdate
 		if (currentLine[index].rfind("ts", 0) == 0) {
 			indexTS = index;
 		}
@@ -62,36 +64,61 @@ void Playback::init(bool verbose, OSMPTIMEUNIT timeunit, float starttime) {
 		else if (currentLine[index].rfind("model_reference", 0) == 0) {
 			indexModelReference = index;
 		}
+		//TrafficCommand
+		else if (currentLine[index].rfind("LongitudinalDistanceAction_Distance", 0) == 0) {
+			indexLongitudinalDistanceActionDistance = index;
+			trafficCommandProvider = true;
+		}
+		else if (currentLine[index].rfind("SpeedAction_AbsoluteTargetSpeed", 0) == 0) {
+			indexSpeedActionAbsoluteTargetSpeed = index;
+			trafficCommandProvider = true;
+		}
 	}
-	if (verbose) {
+	if (verbose && !trafficCommandProvider) {
 		std::cout << "Configuration of indexes: "
-		<< "\ntimestamp: " << unsigned(indexTS)
-		<< "\nindex: " << unsigned(indexID)
-		<< "\nheight: " << unsigned(indexHeight)
-		<< "\nwidht: " << unsigned(indexWidth)
-		<< "\nlength: " << unsigned(indexLength)
-		<< "\nclass: " << unsigned(indexClass)
-		<< "\nvx: " << unsigned(indexVelocityX)
-		<< "\nvy: " << unsigned(indexVelocityY)
-		<< "\nax: " << unsigned(indexAccelerationX)
-		<< "\nay: " << unsigned(indexAccelerationY)
-		<< "\nheading: " << unsigned(indexOrientation)
-		<< "\npositionx: " << unsigned(indexPositionX)
-		<< "\npositiony: " << unsigned(indexPositionY)
-		<< "\npositiony: " << unsigned(indexPositionZ)
-		<< "\nmodel_reference: " << unsigned(indexModelReference) << std::endl;
+			<< "\ntimestamp: " << unsigned(indexTS)
+			<< "\nindex: " << unsigned(indexID)
+			<< "\nheight: " << unsigned(indexHeight)
+			<< "\nwidht: " << unsigned(indexWidth)
+			<< "\nlength: " << unsigned(indexLength)
+			<< "\nclass: " << unsigned(indexClass)
+			<< "\nvx: " << unsigned(indexVelocityX)
+			<< "\nvy: " << unsigned(indexVelocityY)
+			<< "\nax: " << unsigned(indexAccelerationX)
+			<< "\nay: " << unsigned(indexAccelerationY)
+			<< "\nheading: " << unsigned(indexOrientation)
+			<< "\npositionx: " << unsigned(indexPositionX)
+			<< "\npositiony: " << unsigned(indexPositionY)
+			<< "\npositiony: " << unsigned(indexPositionZ)
+			<< "\nmodel_reference: " << unsigned(indexModelReference) << std::endl;
+	}
+	else if (verbose && trafficCommandProvider) {
+		std::cout << "Configuration of indexes: "
+			<< "\nindex: " << unsigned(indexID)
+			<< "\nLongitudinalDistanceActionDistance: " << unsigned(indexLongitudinalDistanceActionDistance)
+			<< "\nSpeedAction_AbsoluteTargetSpeed: " << unsigned(indexSpeedActionAbsoluteTargetSpeed) << std::endl;
 	}
 	currentLine = parseNextLine();
 
-	timeOffsetMicros = determineTimeOffset(timeunit, currentLine[indexTS]);
+	if (!trafficCommandProvider) {
+		timeOffsetMicros = determineTimeOffset(timeunit, currentLine[indexTS]);
+	}
 }
 
 std::vector<std::string> Playback::parseNextLine() {
 	std::string line;
+	std::vector<std::string> parsed;
+
+	if (filestream.eof()) {
+		return parsed;
+	}
 	std::getline(filestream, line);
+	    if (filestream.fail()) {
+		return parsed;
+	}
 	std::stringstream lineStream(line);
 	std::string cell;
-	std::vector<std::string> parsed;
+
 	while (std::getline(lineStream, cell, ','))
 	{
 		parsed.push_back(cell);
@@ -138,21 +165,63 @@ int Playback::writeOSIMessage(const std::string& name, const std::string& value)
 
 int Playback::readOSIMessage(const std::string& name, std::string& message) {
 	int status = 1;
-	if (getMessageType(name) == eOSIMessage::TrafficUpdateMessage) {
-		osi3::TrafficUpdate trafficUpdate;
-		status = createTrafficUpdateMessage(trafficUpdate);
-		trafficUpdate.SerializeToString(&message);
+	auto messageType = getMessageType(name);
+	switch (messageType) {
+		case TrafficUpdateMessage:
+		{
+			osi3::TrafficUpdate trafficUpdate;
+			status = createTrafficUpdateMessage(trafficUpdate);
+			trafficUpdate.SerializeToString(&message);
+			break;
+		}
+		case SensorViewConfigurationMessage:
+		{
+			status = 0;
+			break;
+		}
+		case TrafficCommandMessage:
+		{
+			//support for only one traffic command message
+			if (trafficCommandComputed) {
+				message = trafficCommandString;
+				break;
+			}
+			osi3::TrafficCommand trafficCommand;
+			status = createTrafficCommandMessage(trafficCommand);
+			trafficCommand.SerializeToString(&trafficCommandString);
+			message = trafficCommandString;
+			break;
+		}
 	}
 	//add more message types
 	return status;
 }
 
+int Playback::writeParameter(const std::string& name, const std::string& value) {
+	return 0;
+};
+
+int Playback::readParameter(const std::string& name, std::string& value) {
+	return 0;
+}
+
 int Playback::doStep(double stepSize) {
+	if (firstDoStep) {
+		firstDoStep = false;
+		return 0;
+	}
 	simulationTimeMicros += (unsigned long long)(stepSize * 1000000);
 	return 0;
 }
 
 int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
+	if (currentLine.size() == 0) {
+		if (verbose) {
+			std::cout << "Reach end of file." << std::endl;
+		}
+		return 1;
+	}
+
 	if (verbose) {
 		std::cout << "timeunit:" << timeunit << std::endl;
 		std::cout << "original:" << currentLine[indexTS] << std::endl;
@@ -164,16 +233,10 @@ int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
 		std::cout << "simulationtimemicros: " << simulationTimeMicros << std::endl;
 		std::cout << "result:" << (((long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) << std::endl;
 	}
-	while (((long)((timeunit == OSMPTIMEUNIT::NANO ? std::stoull(currentLine[indexTS]) / 1000 : std::stoull(currentLine[indexTS]))) - timeOffsetMicros) <= simulationTimeMicros) {
+	while (lineInTimestep()) {
 		osi3::MovingObject* movingObject = trafficUpdate.add_update();
 		createMovingObject(currentLine, movingObject);
 		currentLine = parseNextLine();
-		if (currentLine.size() == 0) {
-			if (verbose) {
-				std::cout << "Reach end of file." << std::endl;
-			}
-			return 1;
-		}
 	}
 
 	trafficUpdate.mutable_timestamp()->set_seconds((int64_t)simulationTimeMicros / 1000000);
@@ -182,6 +245,30 @@ int Playback::createTrafficUpdateMessage(osi3::TrafficUpdate& trafficUpdate) {
 		std::cout << "Traffic Update with " << trafficUpdate.update_size() << " vehicles." << std::endl;
 	}
 	return 0;
+}
+
+bool Playback::lineInTimestep() {
+	if (currentLine.size() == 0) {
+		return false;
+	}
+	unsigned long long ts;
+	switch (timeunit) {
+		case OSMPTIMEUNIT::NANO:
+			ts = std::stoull(currentLine[indexTS]) / 1000l;
+		break;
+		case OSMPTIMEUNIT::MICRO:
+			ts = std::stoull(currentLine[indexTS]);
+		break;
+		case OSMPTIMEUNIT::MILLI:
+			ts = std::stoull(currentLine[indexTS]) * 1000l;
+		break;
+	}
+	unsigned long long simulationTs = ts - timeOffsetMicros;
+	if (simulationTs <= simulationTimeMicros) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void Playback::createMovingObject(const std::vector<std::string>& values, osi3::MovingObject* movingObject) {
@@ -223,6 +310,15 @@ void Playback::createMovingObject(const std::vector<std::string>& values, osi3::
 	base->mutable_position()->set_x(std::stod(values[indexPositionX]));
 	base->mutable_position()->set_y(std::stod(values[indexPositionY]));
 	base->mutable_position()->set_z(std::stod(values[indexPositionZ]));
+}
+
+int Playback::createTrafficCommandMessage(osi3::TrafficCommand &trafficCommand) {
+	trafficCommand.mutable_traffic_participant_id()->set_value(std::stoull(currentLine[indexID]));
+	osi3::TrafficAction* action = trafficCommand.add_action();
+	action->mutable_longitudinal_distance_action()->set_distance(std::stod(currentLine[indexLongitudinalDistanceActionDistance]));
+	action = trafficCommand.add_action();
+	action->mutable_speed_action()->set_absolute_target_speed(std::stod(currentLine[indexSpeedActionAbsoluteTargetSpeed]));
+	return 0;
 }
 
 void Playback::close() {

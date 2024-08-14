@@ -1,0 +1,14 @@
+FROM ostar:core_builder AS osmp_builder
+LABEL maintainer="bjoern.bahn@dlr.de"
+#build image ostar:core_builder with Dockerfile4OstarCore
+
+RUN mkdir osmpservice && mkdir osmpservice/build
+WORKDIR /osmpservice/build
+COPY . /osmpservice/
+
+RUN cmake .. -DCMAKE_CXX_STANDARD=14 -DBUILD_SHARED_LIBS=false -DCMAKE_BUILD_TYPE=Release
+RUN cmake --build . --target OSMPService
+
+FROM ubuntu:18.04
+COPY --from=osmp_builder /osmpservice/build/bin/OSMPService .
+ENTRYPOINT ./OSMPService
