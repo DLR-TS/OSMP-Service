@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
   gRPC
   GIT_REPOSITORY https://github.com/grpc/grpc
-  GIT_TAG        v1.29.1
+  GIT_TAG        v1.67.0
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
   LOG_CONFIGURE TRUE
@@ -25,17 +25,18 @@ set(FETCHCONTENT_QUIET OFF)
 # not available before CMake version 3.14 - Using FetchContent_Populate instead
 #FetchContent_MakeAvailable(gRPC)
 
+message("TEST_1234")
 FetchContent_GetProperties(gRPC)
 if(NOT grpc_POPULATED)
 	FetchContent_Populate(gRPC)
-
+	message("TEST_12345")
 	if(TARGET zlib OR TARGET CONAN_PKG::zlib)
 		message(VERBOSE "Using existing zlib provider")
 		set(gRPC_ZLIB_PROVIDER "package" CACHE STRING "Provider of zlib library")
 	else()
 		set(gRPC_ZLIB_PROVIDER "module" CACHE STRING "Provider of zlib library")
 	endif()
-
+	message("TEST_123456")
 	if(TARGET protobuf::protoc OR TARGET CONAN_PKG::protobuf)
 		message(VERBOSE "Using existing protobuf provider")
 		set(gRPC_PROTOBUF_PROVIDER "package" CACHE STRING "Provider of protobuf library")
@@ -53,26 +54,31 @@ if(NOT grpc_POPULATED)
 	else()
 		set(gRPC_PROTOBUF_PROVIDER "module" CACHE STRING "Provider of protobuf library")
 	endif()
-
+	message("TEST_123456")
 	# deactivate abseil-cpp option for building tests
 	set(BUILD_TESTING FALSE)
 
 	message(STATUS "Fetched gRPC to ${grpc_SOURCE_DIR}. Will put build results into ${grpc_BINARY_DIR}.")
+	message("TEST_1234567")
 	if((MSVC OR MINGW) AND BUILD_SHARED_LIBS)
 		message(STATUS "Will build gRPC as static library because dll support is currently broken")
 		set(BUILD_SHARED_LIBS_TMP TRUE)
 		set(BUILD_SHARED_LIBS FALSE)
 	endif()
+	message("TEST_1234567")
 	add_subdirectory(${grpc_SOURCE_DIR} ${grpc_BINARY_DIR} EXCLUDE_FROM_ALL)
+	message("TEST_12345678")
 	if(BUILD_SHARED_LIBS_TMP)
+	message("TEST_12345678a")
 		set(BUILD_SHARED_LIBS True)
 	endif()
 	message(STATUS "Added gRPC subdirectory (${grpc_SOURCE_DIR}).")
-
+	message("TEST_123456789")
 	if(TARGET CONAN_PKG::protobuf)
 		# correct the include directory
 		set(_gRPC_PROTOBUF_WELLKNOWN_INCLUDE_DIR ${CONAN_INCLUDE_DIRS_PROTOBUF})
 	endif()
+	message("TEST_1234567890")
 	if(MSVC OR MINGW)
 		# required compiler definition that is missing in older gRPC versions
 		add_compile_definitions(_WIN32_WINNT=0x0600)

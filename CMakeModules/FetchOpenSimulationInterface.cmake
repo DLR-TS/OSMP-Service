@@ -9,12 +9,22 @@ FetchContent_Declare(
   GIT_PROGRESS TRUE
 )
 
+set(osi_APPEND_PATH ON CACHE BOOL TRUE)
+set(osi_protobuf_generate_APPEND_PATH ON CACHE BOOL TRUE)
+set(osi_APPEND_PATH ON CACHE BOOL INTERNAL TRUE)
+set(osi_protobuf_generate_APPEND_PATH ON CACHE BOOL INTERNAL TRUE)
 set(FETCHCONTENT_QUIET OFF)
 # not available before CMake version 3.14 - Using FetchContent_Populate instead
 #FetchContent_MakeAvailable(gRPC)
 
 FetchContent_GetProperties(osi)
 if(NOT osi_POPULATED)
+  message("AAAAAAAAAAAAAAAAAAAA")
   FetchContent_Populate(osi)
+  set(osi_APPEND_PATH ON CACHE BOOL INTERNAL TRUE)
+  set(osi_protobuf_generate_APPEND_PATH ON CACHE BOOL INTERNAL TRUE)
+  set(osi_APPEND_PATH ON CACHE BOOL TRUE)
+  set(osi_APPEND_PATH TRUE)
+  set(osi_protobuf_generate_APPEND_PATH ON CACHE BOOL TRUE)
   add_subdirectory(${osi_SOURCE_DIR} ${osi_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif(NOT osi_POPULATED)

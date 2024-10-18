@@ -24,3 +24,6 @@ libzip:with_zstd=False
 
 [imports]
 bin, *.dll -> ./bin
+
+[layout]
+cmake_layout
