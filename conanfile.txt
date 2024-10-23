@@ -3,17 +3,16 @@
 protobuf/3.21.12
 
 grpc/1.54.3
-# requirement of grpc on windows (see https://github.com/grpc/grpc/blob/v1.51.1/BUILDING.md#windows)
 catch2/3.7.1
 fakeit/2.3.0
 # fmi4cpp dependencies:
 boost/1.80.0
 libzip/1.8.0
 bzip2/1.0.8
-#zlib/1.2.12 1.3.1 automatisch durch protobuf
 libpng/1.6.40
 
 [tool_requires]
+protobuf/3.21.12
 nasm/2.16.01
 
 [generators]

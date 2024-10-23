@@ -1,5 +1,5 @@
 syntax = "proto3";
-import "grpc_proto_files/CoSiMaMessages.proto";
+import "CoSiMaMessages.proto";
 
 package CoSiMa.rpc;
 
