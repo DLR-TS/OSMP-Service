@@ -29,10 +29,10 @@
 #include "Record.h"
 #include "Playback.h"
 
-#include "grpc_proto_files/simulation_interface/SimulationInterface.pb.h"
-#include "grpc_proto_files/simulation_interface/SimulationInterface.grpc.pb.h"
-#include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.pb.h"
-#include "grpc_proto_files/simulation_interface/OSMPSimulationInterface.grpc.pb.h"
+#include "simulation_interface/SimulationInterface.pb.h"
+#include "simulation_interface/SimulationInterface.grpc.pb.h"
+#include "simulation_interface/OSMPSimulationInterface.pb.h"
+#include "simulation_interface/OSMPSimulationInterface.grpc.pb.h"
 
 class GRPCServer : public CoSiMa::rpc::SimulationInterface::Service, public CoSiMa::rpc::OSMPSimulationInterface::Service
 {
